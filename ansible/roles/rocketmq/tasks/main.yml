@@ -1,0 +1,16 @@
+---
+# tasks file for rocketmq
+- name: Pre-check | check if rocketmq_root_path exists
+  stat: path={{ rocketmq_root_path }}
+  register: rocketmq_root_path_result
+
+- include_tasks: install.yml
+  when: not rocketmq_root_path_result.stat.exists
+
+- include_tasks: configure.yml
+
+- include_tasks: dashboard.yml
+  when: rocketmq_dashboard_enabled == "true"
+
+- include_tasks: exporter.yml
+  when: rocketmq_exporter_enabled == "true"

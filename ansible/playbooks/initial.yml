@@ -1,0 +1,43 @@
+---
+# Usage:
+# option1. use ansible-vault password
+#   ansible-playbook -i inventories/initial.hosts --vault-id pwd.vault -e "hosts_var=localhost" playbooks/initial.yml
+# option2. use vars_prompt password
+#   ansible-playbook -i inventories/initial.hosts -e "hosts_var=10.0.10.12,10.0.10.13" playbooks/initial.yml
+- hosts: "{{ hosts_var }}"
+  vars:
+    ansible_port: 22 
+    ansible_user: root 
+    ansible_ssh_pass: your_root_pwd
+    ansible_python_interpreter: "/usr/bin/python3"
+    # ansible-vault encrypt_string 'your_new_root_pwd' --name 'root_password' --vault-id pwd.vault
+    new_root_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          33636665646466656339383937316164346666323532616536316364373336393665663663313930
+          3665363037663137636632373766396337636331616637380a313836666162373431303237633139
+          66353936383230623332653562303137643332636638386437326461396535626637356331656139
+          6533613736623532380a383636343732363331393634623231393761306264336635333739333865
+          3433
+  #vars_prompt:
+  #  - name: "new_root_password"
+  #    prompt: "Please enter new root password"
+  #    private: yes
+  #    encrypt: "md5_crypt"
+  #    confirm: yes
+  #    salt_size: 7
+  #tasks:
+  #  - debug:
+  #      msg: "{{ new_root_password }}"
+  roles:
+    - audit
+    - disk
+    - hostname
+    - ntp
+    - packages
+    - salt-minion
+    - security    # iptables, ulimit
+    - sysctl
+    - users
+    - vimrc
+    - zabbix-client
+    - { role: sshd, new_root_password: "{{ new_root_password }}" }

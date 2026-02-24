@@ -1,0 +1,7 @@
+# global variable
+ansible_user: ansible
+ansible_port: 300
+ansible_ssh_pass: ansible_password
+ansible_ssh_private_key_file:  /opt/ansible/keys/all.key
+ansible_become_pass: root_password
+hostname_prefix: PROD

@@ -1,0 +1,29 @@
+[Unit]
+Description=Apache Kafka server
+Documentation=https://kafka.apache.org
+After=network.target
+Wants=network-online.target
+ 
+[Service]
+Type=forking
+User=kafka
+Group=kafka
+Environment=KAFKA_HOME=/opt/kafka
+Environment=KAFKA_HEAP_OPTS="{{ jvm_memory_opts }}"
+Environment=KAFKA_CLUSTER_ID={{ kafka_cluster_uuid.stdout }}
+ExecStartPre=/opt/kafka/bin/kafka-storage.sh format -t $KAFKA_CLUSTER_ID -c {{ kafka_config }} --ignore-formatted
+ExecStart=/opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/kraft/server.properties
+ExecStop=/opt/kafka/bin/kafka-server-stop.sh 
+KillSignal=SIGTERM
+KillMode=mixed
+SendSIGKILL=no
+SuccessExitStatus=143
+TimeoutStartSec=60
+TimeoutStopSec=5
+Restart=on-failure
+RestartSec=10s
+LimitNOFILE=655350
+LimitNPROC=655350
+ 
+[Install]
+WantedBy=multi-user.target

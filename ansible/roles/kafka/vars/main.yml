@@ -1,0 +1,18 @@
+---
+# vars file for kafka
+# basic settings
+kafka_root_path: /opt/kafka
+#kafka_cluster_uuid: "7hakKVZCQ0aRnOKAmdPmxx"
+
+
+# server.properties settings
+host_ip: "{{ ansible_default_ipv4['address'] }}"
+#host_index: "{{ ansible_play_batch.index(host_ip) + 1 }}"
+host_index: "{{ ansible_play_batch.index(inventory_hostname) + 1 }}"
+host_ips: "{{ ansible_play_batch }}"
+controller_ips: "{% for index in range(host_ips|length) %}{{ index + 1 }}@{{ host_ips[index] }}:9093{% if not loop.last %},{% endif %}{% endfor %}"
+
+
+# kafka.service settings
+jvm_memory_opts: "-Xms2G -Xmx2G"
+kafka_config: "{{ kafka_root_path }}/config/kraft/server.properties"

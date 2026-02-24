@@ -1,0 +1,19 @@
+/usr/local/nginx/logs/*.log
+/usr/local/nginx/logs/*.json
+{
+    daily
+    rotate 7
+    missingok
+    notifempty
+    sharedscripts
+    copytruncate
+    compress
+    nomail
+    noolddir
+    dateext
+    postrotate
+        if [ -f /usr/local/nginx/logs/nginx.pid ]; then
+            kill -USR1 `cat /usr/local/nginx/logs/nginx.pid`
+        fi
+    endscript
+}

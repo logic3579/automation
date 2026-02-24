@@ -1,0 +1,26 @@
+---
+# handlers file for rocketmq
+- name: Boot | restarted the service using systemd
+  systemd:
+    name: "{{ item }}"
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+  listen: "notify boot handlers"
+  loop:
+    - rocketmq-namesrv
+    - rocketmq-master
+    - rocketmq-slave
+
+- name: Boot | ensure the service is running
+  wait_for:
+    connect_timeout: 3
+    delay: 15
+    host: "{{ host_ip }}"
+    port: "{{ item }}"
+    state: started
+  listen: "notify boot handlers"
+  loop:
+    - "{{ namesrv_port }}"
+    - "{{ master_port }}"
+    - "{{ slave_port }}"

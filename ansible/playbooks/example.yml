@@ -1,0 +1,163 @@
+---
+# Usage:
+#
+# Default inventory:
+#   ansible test -m ping
+#   ansible-playbook playbooks/template.yml
+#
+# Special inventory:
+#   ansible -i inventories/test.hosts 10.0.10.12,10.0.10.13 -m ping
+#   ansible-playbook -i inventories/test.hosts playbooks/template.yml -e "hosts_var=10.0.10.12,10.0.10.13"
+#
+# Test unit:
+#   ansible-playbook playbooks/example.yml -u root --become --become-method su
+#
+#   ansible-playbook playbooks/example.yml --list-tasks --list-tags
+#   ansible-playbook playbooks/example.yml -C
+#   ansible-playbook playbooks/example.yml --step
+#   ansible-playbook playbooks/example.yml --start-at-task "your task name"
+
+- name: Example Playbook
+  #hosts: test
+  hosts: "{{ hosts_var }}"
+  # remote_user: root
+  # become: true
+  # become_method: su
+  # ignore_errors: false
+  gather_facts: true
+  # tags: ["foo", "bar"]
+  vars:
+    - k1: v1
+    - k2: v2
+  tasks:
+    - name: Ansible buildin ping
+      ansible.builtin.ping:
+      tags:
+        - debug
+
+    - name: Ansible buildin debug
+      ansible.builtin.debug:
+        # var: "{{ ansible_facts }}"
+        msg: "debug msg"
+
+    - name: Ansible buildin template
+      ansible.builtin.template:
+        scr: templates/test.j2
+        dest: /tmp/hostname
+        mode: 0644
+
+    - name: Ansible system fact setup info
+      ansible.builtin.debug:
+        msg: "{{ ansible_facts['default_ipv4']['address'] }}"
+
+    - name: Ansible playbook vars: inventory_hostname, ansible_play_batch
+      ansible.builtin.debug:
+        #msg: "{{ ansible_play_batch }}"
+        #msg: "{{ ansible_play_batch|length }}"
+        msg: "{{ ansible_play_batch.index(inventory_hostname) }}"
+
+    - name: Ansible builtin shell
+      ansible.builtin.shell: echo "I've got '{{ foo }}' and am not afraid to use it!"
+
+    - name: Ansible builtin shell register
+      ansible.builtin.shell: cat /tmp/test.conf
+      register: file_contents
+    - ansible.builtin.shell: echo "/tmp/test.conf contains 'hi'"
+      when: file_contents.stdout.find('hi') != -1
+
+    - name: Ansible builtin command
+      ansible.builtin.command: echo "I've got '{{ foo }}' and am not afraid to use it!"
+      when: foo is defined
+
+    - name: Ansible builtin fail
+      fail: 
+        msg: "Bailing out. this play requires variable foo"
+      when: foo is undefined
+
+    # All import* statements are pre-processed at the time playbooks are parsed.
+    # All include* statements are processed as they are encountered during the execution of the playbook.
+    - import_tasks: Debian.yml
+      when: ansible_os_family == "Debian"
+    - include_tasks: "{{ item }}.yaml"
+      loop:
+        - i1
+        - i2
+
+  # role settings
+  roles:
+    - role: redis
+      vars:
+        config: redis.conf
+        port: 6379
+    # custom fact data
+    - role: fact 
+      dir: /opt/ansible/facts.d/
+      factfile: forbidden.fact
+      one: aaa 
+      two: bbb
+
+  # environment settings
+  environment:
+    http_proxy: http://example.com:8080
+    PATH: /opt/go/bin:{{ ansible_env.PATH }}
+---
+# Usage:
+#   ansible-playbook playbooks/example.yml --start-at-task "Attempt and graceful roll back demo"
+- name: Attempt and graceful roll back demo
+  hosts: test
+  tasks:
+    - block:
+        - ansible.builtin.debug:
+            msg: 'I execute normally'
+        - name: i force a failure
+          command: /bin/false
+        - ansible.builtin.debug:
+            msg: 'I never execute, due to the above task failing, :-('
+      rescue:
+        - ansible.builtin.debug:
+            msg: 'I caught an error'
+        - name: i force a failure in middle of recovery! >:-)
+          command: /bin/false
+        - ansible.builtin.debug:
+            msg: 'I also never execute :-('
+      always:
+        - ansible.builtin.debug:
+            msg: "This always executes"
+  handlers:
+     - name: run me even after an error
+       ansible.builtin.debug:
+         msg: "This handler runs even on error"
+---
+# Usage:
+#   ansible-playbook playbooks/example.yml --start-at-task "Test lookup plugin"
+- name: Test lookup plugin
+  hosts: test
+  vars:
+     contents: "{{ lookup('file', '/tmp/foo.txt') }}"
+     local_home: "{{ lookup('env', 'HOME') }}"
+  tasks:
+    - ansible.builtin.debug:
+        msg: "the value of foo.txt is {{ contents }}"
+    - ansible.builtin.debug:
+        msg: "The TXT record for example.org. is {{ lookup('dig',  'example.org./TXT') }}"
+    - ansible.builtin.debug: 
+        var: "{{ local_home }}"
+
+---
+# Usage:
+#   ansible-vault encrypt_string pwd123 --name root_password
+#   ansible-playbook playbooks/example.yml --start-at-task "Vault task" --ask-vault-pass
+- name: Vault task
+  hosts: test
+  vars:
+    root_password: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              31633966303334346438316331323761343062643963343661356630333461616135656563653464
+              3437376461316135333731393763303337306239353564350a373164343866386463623032346631
+              32633664656634326565396661656437656161346363373330646261343035656536373963366537
+              3139303766633766330a316332666362623331303238343030393663396130326435613931303432
+              3333
+  tasks:
+    - name: debug
+      ansible.builtin.debug:
+        msg: "{{ root_password }}"

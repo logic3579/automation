@@ -1,0 +1,11 @@
+---
+# tasks file for kafka
+- name: Pre-check | check if kafka_root_path exists
+  stat: 
+    path: "{{ kafka_root_path }}"
+  register: kafka_root_path_result
+
+- include_tasks: install.yml
+  when: not kafka_root_path_result.stat.exists
+
+- include_tasks: configure.yml

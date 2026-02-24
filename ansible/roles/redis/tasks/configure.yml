@@ -1,0 +1,65 @@
+- name: Configure Step
+  block:
+    - name: set cluster fact redis_ports
+      set_fact:
+        redis_ports: "{{ redis_cluster_ports[(ansible_play_batch.index(inventory_hostname) * 2):(ansible_play_batch.index(inventory_hostname) * 2 + 2)] }}"
+      when: redis_cluster_enabled == "yes"
+      #run_once: true
+
+    # - name: Configure | set kernel value
+    #   sysctl:
+    #    name: vm.overcommit_memory
+    #    value: 1
+    #    name: net.core.somaxconn
+    #    value: 16384
+    #    state: present
+    #    reload: yes
+
+    # - name: Configure | create group redis
+    #   group:
+    #     name: redis
+    # - name: Configure | create user redis
+    #   user:
+    #     name: redis
+    #     groups: redis
+    #     shell: /sbin/nologin
+    #     create_home: no
+
+    - name: Configure | create redis data directory
+      file:
+        path: "{{ redis_dir }}"
+        state: directory
+      loop: "{{ redis_ports }}"
+      loop_control:
+        loop_var: redis_port
+
+    - name: Configure | copy redis.conf.j2 to redis.conf
+      template:
+        src: redis.conf.j2
+        dest: "{{ redis_config }}"
+        mode: '0644'
+      loop: "{{ redis_ports }}"
+      loop_control:
+        loop_var: redis_port
+
+    - name: Configure | copy redis.service.j2 to systemd service file
+      template:
+        src: redis.service.j2
+        dest: "/etc/systemd/system/redis-{{ redis_port }}.service"
+        mode: '0644'
+      loop: "{{ redis_ports }}"
+      loop_control:
+        loop_var: redis_port
+
+    - name: Configure | set redis_root_path permission
+      file:
+        path: "{{ redis_root_path }}"
+        owner: redis
+        group: redis
+        state: directory
+        recurse: true
+
+  always:
+    - name: Configure | notify boot handlers
+      command: echo notify boot handlers
+      notify: "notify boot handlers"

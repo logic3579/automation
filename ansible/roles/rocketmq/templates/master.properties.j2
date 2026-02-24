@@ -1,0 +1,12 @@
+brokerClusterName={{ cluster_name | default('DefaultCluster') }}
+brokerName={{ master_broker_name | default('broker-m') }}
+brokerId=0
+namesrvAddr={{ namesrv_addr }}
+bindAddress={{ bind_addr }}
+listenPort={{ master_port | default('6888') }}
+storePathRootDir=/opt/rocketmq/store
+deleteWhen=04
+diskMaxUsedSpaceRatio=85
+fileReservedTime=48
+brokerRole=SYNC_MASTER
+flushDiskType=ASYNC_FLUSH

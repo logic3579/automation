@@ -1,0 +1,5 @@
+#ansible_user: root
+#ansible_port: 300
+#ansible_ssh_pass: xxx
+ansible_ssh_private_key_file:  /opt/ansible/keys/east.key
+hostname_prefix: EAST

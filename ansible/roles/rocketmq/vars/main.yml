@@ -1,0 +1,26 @@
+---
+# vars file for rocketmq
+# basic settings
+host_ip: "{{ ansible_default_ipv4['address'] }}"
+rocketmq_root_path: /opt/rocketmq
+rocketmq_version: 5.3.0
+rocketmq_dashboard_enabled: false
+rocketmq_exporter_enabled: false
+namesrv_jvm_memory: "-Xms2g -Xmx2g"
+broker_jvm_memory: "-Xms2g -Xmx2g"
+
+
+# properties config settings
+cluster_name: DefaultCluster
+master_broker_name: "broker-m{{ ansible_play_batch.index(host_ip) }}"
+slave_broker_name: "broker-s{{ ansible_play_batch.index(host_ip) }}"
+namesrv_addr: "{% for index in range(ansible_play_batch|length) %}{{ ansible_play_batch[index] }}:9876{% if not loop.last %};{% endif %}{% endfor %}"
+bind_addr: "{{ host_ip }}"
+namesrv_port: 9876
+master_port: 6888
+slave_port: 7888
+
+
+# rocketmq.service settings
+master_config: "{{ rocketmq_root_path }}/conf/2m-2s-sync/broker-m.properties"
+slave_config: "{{ rocketmq_root_path }}/conf/2m-2s-sync/broker-s.properties"

@@ -1,0 +1,56 @@
+---
+- name: Install Step
+  vars:
+    rocketmq_pkg_url: https://dist.apache.org/repos/dist/release/rocketmq/5.3.0/rocketmq-all-5.3.0-bin-release.zip
+    rocketmq_dir_name: rocketmq-all-5.3.0-bin-release
+    rocketmq_pkg_name: rocketmq-all-5.3.0-bin-release.zip
+    rocketmq_src_path: /opt/rocketmq-all-5.3.0-bin-release
+    rocketmq_link_path: /opt/rocketmq
+  block:
+    - name: Install | check if rocketmq package exists
+      stat:
+        path: "{{ role_path }}/files/{{ rocketmq_pkg_name }}"
+      delegate_to: localhost
+      become: false
+      remote_user: ansible
+      register: rocketmq_pkg_result
+      run_once: true
+    
+    - name: Install | download rocketmq package
+      get_url:
+        url: "{{ rocketmq_pkg_url }}"
+        dest: "{{ role_path }}/files/{{ rocketmq_pkg_name }}"
+        validate_certs: no
+      delegate_to: localhost
+      become: false
+      remote_user: ansible
+      run_once: true
+      when: not rocketmq_pkg_result.stat.exists
+
+    - name: Install | ensure dependency packages are installed
+      package: name=openjdk-17-jdk update_cache=true
+
+    - name: Install | copy rocketmq package
+      copy:
+        src: "{{ rocketmq_pkg_name }}"
+        dest: "/tmp/{{ rocketmq_pkg_name }}"
+
+    - name: Install | unarchive rocketmq package
+      unarchive:
+        src: "/tmp/{{ rocketmq_pkg_name }}"
+        dest: /opt
+        mode: 0755
+        remote_src: true
+
+    - name: Install | create symbolic link
+      file: 
+        src: "/opt/{{ rocketmq_dir_name }}"
+        dest: "{{ rocketmq_root_path }}"
+        owner: rocketmq
+        group: rocketmq
+        state: link
+
+    - name: Install | delete tmp file
+      file:
+        path: "/tmp/{{ rocketmq_pkg_name }}"
+        state: absent

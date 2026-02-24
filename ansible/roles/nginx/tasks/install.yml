@@ -1,0 +1,62 @@
+---
+- name: Install Step
+  vars:
+    nginx_pkg_url: 
+    nginx_dir_name: nginx
+    nginx_pkg_name: nginx-1.20.1.tar.gz
+    nginx_src_path: 
+    nginx_link_path: 
+  block:
+    #- name: Install | check if nginx package exists
+    #  stat:
+    #    path: "{{ role_path }}/files/{{ nginx_pkg_name }}"
+    #  delegate_to: localhost
+    #  register: nginx_pkg_result
+    #  become: false
+    #  remote_user: nginx
+    #  run_once: true
+    #
+    #- name: Install | download nginx package
+    #  get_url:
+    #    url: "{{ nginx_pkg_url }}"
+    #    dest: "{{ role_path }}/files/{{ nginx_pkg_name }}"
+    #    validate_certs: no
+    #  delegate_to: localhost
+    #  run_once: true
+    #  become: false
+    #  remote_user: nginx
+    #  when: not nginx_pkg_result.stat.exists
+
+    - name: Install | ensure dependency packages are installed
+      package: name={{ item }} state=present update_cache=true
+      loop:
+        - libssl-dev
+        - libpcre3-dev
+        - zlib1g-dev
+        - libgeoip-dev
+        - libjson-c-dev
+
+    - name: Install | copy nginx package
+      copy:
+        src: "{{ nginx_pkg_name }}"
+        dest: "/tmp/{{ nginx_pkg_name }}"
+
+    - name: Install | unarchive nginx package
+      unarchive:
+        src: "/tmp/{{ nginx_pkg_name }}"
+        dest: /opt
+        mode: 0755
+        remote_src: true
+
+    #- name: Install | create symbolic link
+    #  file: 
+    #    src: "/opt/{{ nginx_dir_name }}"
+    #    dest: "{{ nginx_root_path }}"
+    #    owner: nginx
+    #    group: nginx
+    #    state: link
+
+    - name: Install | delete tmp file
+      file:
+        path: "/tmp/{{ nginx_pkg_name }}"
+        state: absent

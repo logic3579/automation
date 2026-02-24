@@ -1,0 +1,44 @@
+- name: Configure Step
+  block:
+    # - name: Configure | set kernel value
+    #   sysctl:
+
+    # - name: Configure | create kafka group kafka
+    #   group:
+    #     name: kafka
+    # - name: Configure | create kafka user kafka
+    #   user:
+    #     name: kafka
+    #     groups: kafka
+    #     shell: /sbin/nologin
+    #     create_home: yes
+
+    - name: Configure | generate a cluster uuid
+      command: bin/kafka-storage.sh random-uuid
+      args:
+        chdir: "{{ kafka_root_path }}"
+      register: kafka_cluster_uuid
+      when: kafka_cluster_uuid is not defined
+      run_once: true
+
+    - name: Configure | copy configuration file and systemd service file
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0644'
+      loop:
+        - { src: server.properties.j2, dest: "{{ kafka_config }}" }
+        - { src: kafka.service.j2, dest: /etc/systemd/system/kafka.service }
+
+    - name: Configure | set permission for kafka_root_path
+      file:
+        path: "{{ kafka_root_path }}"
+        owner: kafka
+        group: kafka
+        state: directory
+        recurse: true
+
+  always:
+    - name: Configure | notify boot handlers
+      command: echo notify boot handlers
+      notify: "notify boot handlers"

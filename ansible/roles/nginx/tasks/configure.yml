@@ -1,0 +1,45 @@
+---
+- name: Configure Step
+  block:
+    - name: Configure | copy configuration file and systemd service file
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0644'
+      loop:
+        - { src: nginx.service.j2, dest: /etc/systemd/system/nginx.service }
+        - { src: nginx.ld.conf.j2, dest: /etc/ld.so.conf.d/nginx.ld.conf }
+
+    - name: Configure | set permission for nginx_root_path
+      file:
+        path: "{{ nginx_root_path }}"
+        owner: nginx
+        group: nginx
+        state: directory
+        recurse: true
+
+    - name: Configure | set nginx directory and binary file permission
+      file: 
+        path: "{{ item.path }}" 
+        owner: "{{ item.user }}"
+        group: "{{ item.group }}" 
+        mode: "{{ item.mode }}" 
+        state: "{{ item.state }}" 
+        recurse: "{{ item.recurse }}"
+      loop:
+        - { path: "{{ nginx_root_path }}", mode: "0755", user: nginx, group: nginx, state: directory, recurse: yes }
+        - { path: "{{ nginx_bin }}", mode: "4755", user: root, group: root, state: file, recurse: no }
+
+    - name: Configure | add system library path
+      command: ldconfig
+
+    - name: Configure | copy logrotate file
+      copy: src=nginx.logrotate dest=/opt/cron/nginx owner=root group=root mode=644
+
+    - name: Configure | set logrotate cronjob
+      cron: name='logroate nginx' minute='58' hour='23' job='/usr/sbin/logrotate -f /opt/cron/nginx >> /opt/cron/cron.log 2>&1'
+
+  always:
+    - name: Configure | notify boot handlers
+      command: echo notify boot handlers
+      notify: "notify boot handlers"

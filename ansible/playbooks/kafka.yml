@@ -1,0 +1,14 @@
+---
+# Usage: 
+# standalone
+#   ansible-playbook -e "hosts_var=10.0.10.12" playbook/kafka.yml
+# cluster
+#   ansible-playbook -e "hosts_var=10.0.10.12,10.0.10.13,10.0.10.14" playbook/kafka.yml
+
+- hosts: "{{ hosts_var }}"
+  remote_user: root
+  become: yes
+  become_method: su
+  #gather_facts: false
+  roles:
+    - { role: kafka }

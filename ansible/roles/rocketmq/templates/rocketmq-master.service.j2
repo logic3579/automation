@@ -1,0 +1,24 @@
+[Unit]
+Description=Rocketmq
+Documentation=https://rocketmq.apache.org/docs/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/opt/rocketmq/bin/mqbroker -c {{ master_config }}
+LimitNOFILE=655350
+LimitNPROC=65535
+NoNewPrivileges=yes
+#PrivateTmp=yes
+Restart=on-failure
+RestartSec=10s
+Type=simple
+TimeoutStartSec=60
+TimeoutStopSec=30
+UMask=0077
+User=rocketmq
+Group=rocketmq
+WorkingDirectory=/opt/rocketmq
+
+[Install]
+WantedBy=multi-user.target

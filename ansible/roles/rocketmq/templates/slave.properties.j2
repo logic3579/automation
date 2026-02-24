@@ -1,0 +1,12 @@
+brokerClusterName={{ cluster_name | default('DefaultCluster') }}
+brokerName={{ slave_broker_name | default('broker-s') }}
+brokerId=1
+namesrvAddr={{ namesrv_addr }}
+bindAddress={{ bind_addr }}
+listenPort={{ slave_port | default('7888') }}
+storePathRootDir=/opt/rocketmq/store-s
+deleteWhen=04
+diskMaxUsedSpaceRatio=85
+fileReservedTime=48
+brokerRole=SLAVE
+flushDiskType=ASYNC_FLUSH

@@ -1,0 +1,12 @@
+---
+# tasks file for fact
+- name: Create directory
+  file: path={{ dir }} state=directory recurse=yes
+  when: ansible_hostname == 'node1'
+
+- name: Synchronize factfile
+  template: src=forbidden.fact.j2 dest={{ dir }}/{{ factfile }} 
+
+- name: Debug custom fact value
+  ansible.builtin.debug:
+    var: ansible_local.forbidden.forbid

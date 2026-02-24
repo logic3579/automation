@@ -1,0 +1,10 @@
+[test]
+10.0.0.1
+10.0.0.2
+
+[east:children]
+test
+#ansible_user=ansible
+#ansible_port=22
+#ansible_ssh_pass=ansible_password
+#hostname_prefix=TEST

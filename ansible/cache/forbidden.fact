@@ -1,0 +1,6 @@
+[forbid]
+foo=bar
+
+[myvar1]
+testkey1=value1
+testkey2=value2

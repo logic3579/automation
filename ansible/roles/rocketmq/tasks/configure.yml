@@ -1,0 +1,48 @@
+---
+- name: Configure Step
+  block:
+    # - name: Configure | set kernel value
+    #   sysctl:
+
+    # - name: Configure | create rocketmq group rocketmq
+    #   group:
+    #     name: rocketmq
+    # - name: Configure | create rocketmq user rocketmq
+    #   user:
+    #     name: rocketmq
+    #     groups: rocketmq
+    #     shell: /sbin/nologin
+    #     create_home: yes
+
+    - name: Configure | copy configuration file and systemd service file
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0644'
+      loop:
+        - { src: master.properties.j2, dest: "{{ master_config }}" }
+        - { src: slave.properties.j2, dest: "{{ slave_config }}" }
+        - { src: rocketmq-namesrv.service.j2, dest: "/etc/systemd/system/rocketmq-namesrv.service" }
+        - { src: rocketmq-master.service.j2, dest: "/etc/systemd/system/rocketmq-master.service" }
+        - { src: rocketmq-slave.service.j2, dest: "/etc/systemd/system/rocketmq-slave.service" }
+
+    - name: Configure | set namesrv and broker jvm memory opts
+      shell: |
+        sed -i 's/-Xms[0-9]g -Xmx[0-9]g/{{ namesrv_jvm_memory }}/' runserver.sh
+        sed -i 's/-Xms[0-9]g -Xmx[0-9]g/{{ broker_jvm_memory }}/' runbroker.sh
+      args:
+        chdir: "{{ rocketmq_root_path }}/bin"
+        executable: /bin/bash
+
+    - name: Configure | set permission for rocketmq_root_path
+      file:
+        path: "{{ rocketmq_root_path }}"
+        owner: rocketmq
+        group: rocketmq
+        state: directory
+        recurse: true
+
+  always:
+    - name: Configure | notify boot handlers
+      command: echo notify boot handlers
+      notify: "notify boot handlers"

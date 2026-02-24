@@ -1,0 +1,9 @@
+---
+# vars file for nginx
+# basic settings
+host_ip: "{{ ansible_default_ipv4['address'] }}"
+nginx_root_path: /opt/nginx
+nginx_version: 1.20.1
+nginx_port: 80
+nginx_bin: /opt/nginx/sbin/nginx
+nginx_lib_path: /opt/nginx/lib/

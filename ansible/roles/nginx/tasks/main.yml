@@ -1,0 +1,12 @@
+---
+# tasks file for nginx
+- name: Pre-check | check if nginx_root_path exists
+  stat: 
+    path: "{{ nginx_root_path }}"
+  register: nginx_root_path_result
+
+- include_tasks: install.yml
+  when: not nginx_root_path_result.stat.exists
+
+- include_tasks: configure.yml
+  when: not nginx_root_path_result.stat.exists

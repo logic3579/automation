@@ -1,0 +1,25 @@
+---
+# vars file for redis
+# basic settings
+host_ip: "{{ ansible_default_ipv4['address'] }}"
+redis_root_path: /opt/redis
+redis_version: 7.0.11
+redis_ports: [6379]
+redis_cluster_ports: [7001, 7002, 7003, 7004, 7005, 7006]
+redis_cluster_init_info: "{% for index in range(ansible_play_batch|length)%}{{ ansible_play_batch[index] }}:{{ redis_cluster_ports[index * 2] }} {{ ansible_play_batch[index] }}:{{ redis_cluster_ports[index * 2 + 1] }}{%- if not loop.last %} {% endif %}{% endfor %}"
+
+
+# redis.conf settings
+redis_bind: "{{ host_ip }}"
+#redis_port: "{{ assigned_port | default('6379') }}"
+redis_pidfile: "./redis.pid"
+redis_logfile: "./redis.log"
+redis_dir: "{{ redis_root_path }}/{{ redis_port }}"
+redis_password: "pwd123"
+redis_aof_enabled: "no"
+redis_cluster_enabled: "no"
+
+
+# redis.service settings
+redis_config: "{{ redis_dir }}/redis.conf"
+redis_maxmemory: "6gb"

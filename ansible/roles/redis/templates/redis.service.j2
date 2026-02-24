@@ -1,0 +1,24 @@
+[Unit]
+Description=Redis data structure server
+Documentation=https://redis.io/documentation
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/opt/redis/bin/redis-server {{ redis_config }} --supervised systemd --daemonize no --maxmemory {{ redis_maxmemory }}
+LimitNOFILE=655350
+LimitNPROC=65535
+NoNewPrivileges=yes
+#PrivateTmp=yes
+Restart=on-failure
+RestartSec=10s
+Type=notify
+TimeoutStartSec=infinity
+TimeoutStopSec=infinity
+UMask=0077
+User=tomcat
+Group=tomcat
+WorkingDirectory={{ redis_root_path }}
+
+[Install]
+WantedBy=multi-user.target

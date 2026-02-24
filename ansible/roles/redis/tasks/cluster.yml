@@ -1,0 +1,4 @@
+- name: Cluster | notify cluster handlers
+  command: echo notify cluster handlers
+  notify: "notify cluster handlers"
+  run_once: true

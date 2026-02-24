@@ -1,0 +1,29 @@
+[Unit]
+Description=Nginx-1.20.1
+Documentation=https://nginx.org
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=forking
+RuntimeDirectory=nginx
+PrivateTmp=true
+PIDFile={{ nginx_root_path }}/logs/nginx.pid
+WorkingDirectory={{ nginx_root_path }}
+ExecStartPre={{ nginx_bin }} -t
+ExecStart={{ nginx_bin }}
+ExecReload={{ nginx_bin }} -s reload
+ExecStop={{ nginx_bin }} -s stop
+KillSignal=SIGTERM
+KillMode=mixed
+SendSIGKILL=no
+SuccessExitStatus=143
+TimeoutStartSec=60
+TimeoutStopSec=5
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=655350
+LimitNPROC=655350
+
+[Install]
+WantedBy=multi-user.target

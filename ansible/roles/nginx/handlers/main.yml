@@ -1,0 +1,18 @@
+---
+# handlers file for nginx
+- name: Boot | restarted the service using systemd
+  systemd:
+    name: nginx
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+  listen: "notify boot handlers"
+
+- name: Boot | ensure the service is running
+  wait_for:
+    connect_timeout: 3
+    delay: 15
+    host: "{{ host_ip }}"
+    port: "{{ nginx_port }}"
+    state: started
+  listen: "notify boot handlers"

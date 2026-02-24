@@ -1,0 +1,30 @@
+---
+# handlers file for redis
+- name: Boot | restarted the service using systemd
+  systemd:
+    name: "redis-{{ redis_port }}"
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+  listen: "notify boot handlers"
+
+- name: Boot | ensure the service is running
+  wait_for:
+    connect_timeout: 3
+    delay: 15
+    host: "{{ host_ip }}"
+    port: "{{ redis_port }}"
+    state: started
+  listen: "notify boot handlers"
+
+- name: Cluster | init cluster
+  command: ./bin/redis-cli --cluster create {{ redis_cluster_init_info }}  --cluster-replicas 1 --cluster-yes -a {{ redis_password }}
+  args:
+    chdir: "{{ redis_root_path }}"
+  listen: "notify cluster handlers"
+  register: init_cluster_result
+
+- name: Cluster | print init cluster result
+  debug:
+    msg: "{{ init_cluster_result.stdout }}"
+  listen: "notify cluster handlers"

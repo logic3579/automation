@@ -1,0 +1,19 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for security
+- name: Create config directory
+  shell: mkdir -p /etc/sysconfig/
+
+- name: Update iptables file Ubuntu20
+  copy: src=iptables dest=/etc/sysconfig/iptables owner=root group=root mode=0600
+  when: ansible_distribution_major_version  == "20" and ansible_distribution_file_variety == "Debian"
+
+- name: Restart iptables
+  shell: /sbin/iptables-restore < /etc/sysconfig/iptables
+
+# /etc/security/limits.conf
+- name: Set ulimit
+  pam_limits: domain=* limit_type=- limit_item={{ item }} value=655350
+  with_items:
+    - nofile
+    - nproc

@@ -1,0 +1,32 @@
+# -*- coding: utf-8 -*-
+# vim: ft=jinja
+
+{%- import_yaml './defaults.yaml' as defaults %}
+{%- import_yaml './osfamilymap.yaml' as osfamilymap %}
+{%- import_yaml './osmap.yaml' as osmap %}
+{%- import_yaml './osfingermap.yaml' as osfingermap %}
+
+{%- set packages = salt['grains.filter_by'](
+    defaults,
+    merge = salt['grains.filter_by'](
+        osfamilymap,
+        grain='os_family',
+        merge = salt['grains.filter_by'](
+            osmap,
+            grain='os',
+            merge = salt['grains.filter_by'](
+              osfingermap,
+              grain='osfinger',
+              merge = salt['config.get']('packages', {}),
+            ),
+        ),
+    ),
+    base='packages')
+%}
+
+{#- Post-processing for specific non-YAML customisations #}
+{%- do packages.update({'kernel': grains.kernel | lower}) %}
+{%- if grains.os == 'MacOS' %}
+{%-   set macos_user = salt['cmd.run']("stat -f '%Su' /dev/console") %}
+{%-   do packages.update({'rootuser': macos_user}) %}
+{%- endif %}

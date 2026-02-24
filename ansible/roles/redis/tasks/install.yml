@@ -1,0 +1,58 @@
+- name: Install Step
+  vars:
+    redis_pkg_url: https://download.redis.io/releases/redis-7.0.11.tar.gz
+    redis_dir_name: redis-7.0.11
+    redis_pkg_name: redis-7.0.11.tar.gz
+    redis_src_path: /usr/local/src
+  block:
+    - name: Install | check if redis package exists
+      stat:
+        path: "{{ role_path }}/files/{{ redis_pkg_name }}"
+      delegate_to: localhost
+      become: false
+      remote_user: ansible
+      register: redis_pkg_result
+      run_once: true
+
+    - name: Install | download redis package
+      get_url:
+        url: "{{ redis_pkg_url }}"
+        dest: "{{ role_path }}/files/{{ redis_pkg_name }}"
+        validate_certs: no
+      delegate_to: localhost
+      become: false
+      remote_user: ansible
+      run_once: true
+      when: not redis_pkg_result.stat.exists
+
+    - name: Install | ensure dependency packages are installed
+      package: name={{ item }} update_cache=true
+      loop:
+        - gcc
+        - g++
+        - libsystemd-dev
+        - make
+        - pkgconf
+        - unzip
+
+    - name: Install | copy the redis package to remote tmp dir
+      copy:
+        src: "{{ redis_pkg_name }}"
+        dest: "{{ redis_src_path }}/{{ redis_pkg_name }}"
+
+    - name: Install | unarchive redis package
+      unarchive:
+        src: "{{ redis_src_path }}/{{ redis_pkg_name }}"
+        dest: "{{ redis_src_path }}"
+        mode: 0755
+        remote_src: true
+
+    - name: Install | build redis to redis_root_path
+      shell: |
+        make MALLOC=jemalloc USE_SYSTEMD=yes
+        make PREFIX="{{ redis_root_path }}" install
+      args:
+        creates: "{{ redis_root_path }}"
+        chdir: "{{ redis_src_path }}/{{ redis_dir_name }}"
+        executable: /bin/bash
+      register: compile_result

@@ -1,0 +1,49 @@
+# -*- coding: utf-8 -*-
+# vim: ft=yaml
+---
+Suse:
+  pips:
+    required:
+      pkgs:
+        - python3-pip
+  gems:
+    required:
+      pkgs:
+        - ruby-common
+
+Debian:
+  pips:
+    required:
+      pkgs:
+        - python3-pip
+  gems:
+    required:
+      pkgs:
+        - ruby
+RedHat:
+  pips:
+    required:
+      pkgs:
+        - gcc
+        - python3-pip
+  gems:
+    required:
+      pkgs:
+        - rubygems
+
+FreeBSD:
+  pips:
+    required:
+      pkgs:
+        - devel/py36-pip
+  gems:
+    required:
+      pkgs:
+        - lang/ruby25
+        - devel/ruby-gems
+
+Windows:
+  chocolatey:
+    required:
+      pkgs:
+        - chocolatey

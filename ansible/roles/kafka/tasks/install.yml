@@ -1,0 +1,59 @@
+- name: Install Step
+  vars:
+    kafka_pkg_url: https://downloads.apache.org/kafka/3.7.1/kafka_2.13-3.7.1.tgz
+    kafka_dir_name: kafka_2.13-3.7.1
+    kafka_pkg_name: kafka_2.13-3.7.1.tgz
+  block:
+    - name: Install | check if kafka package exists
+      stat:
+        path: "{{ role_path }}/files/{{ kafka_pkg_name }}"
+      delegate_to: localhost
+      become: false
+      remote_user: ansible
+      register: kafka_pkg_result
+      run_once: true
+
+    - name: Install | download kafka package
+      get_url:
+        url: "{{ kafka_pkg_url }}"
+        dest: "{{ role_path }}/files/{{ kafka_pkg_name }}"
+        validate_certs: no
+      delegate_to: localhost
+      become: false
+      remote_user: ansible
+      run_once: true
+      when: not kafka_pkg_result.stat.exists
+
+    - name: Install | ensure dependency packages are installed
+      package: 
+        name: "{{ item }}"
+        update_cache: true
+      loop:
+        - openjdk-17-jdk
+        #- default-jre
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Install | copy kafka package
+      copy:
+        src: "{{ kafka_pkg_name }}"
+        dest: "/tmp/{{ kafka_pkg_name }}"
+
+    - name: Install | unarchive kafka package
+      unarchive:
+        src: "/tmp/{{ kafka_pkg_name }}"
+        dest: /opt
+        mode: 0755
+        remote_src: true
+
+    - name: Install | create symbolic link
+      file: 
+        src: "/opt/{{ kafka_dir_name }}"
+        dest: "{{ kafka_root_path }}"
+        owner: kafka
+        group: kafka
+        state: link
+
+    - name: Install | delete tmp file
+      file:
+        path: "/tmp/{{ kafka_pkg_name }}"
+        state: absent

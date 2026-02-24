@@ -1,0 +1,12 @@
+{% set apache = salt['grains.filter_by']({
+    'Debian': {
+        'server': 'apache2',
+        'service': 'apache2',
+        'conf': '/etc/apache2/apache.conf',
+    },
+    'RedHat': {
+        'server': 'httpd',
+        'service': 'httpd',
+        'conf': '/etc/httpd/httpd.conf',
+    },
+}, merge=salt['pillar.get']('apache:lookup')) %}

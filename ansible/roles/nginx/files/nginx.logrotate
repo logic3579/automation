@@ -1,5 +1,5 @@
-/usr/local/nginx/logs/*.log
-/usr/local/nginx/logs/*.json
+/opt/nginx/logs/*.log
+/opt/nginx/logs/*.json
 {
     daily
     rotate 7
@@ -12,8 +12,8 @@
     noolddir
     dateext
     postrotate
-        if [ -f /usr/local/nginx/logs/nginx.pid ]; then
-            kill -USR1 `cat /usr/local/nginx/logs/nginx.pid`
+        if [ -f /opt/nginx/logs/nginx.pid ]; then
+            kill -USR1 `cat /opt/nginx/logs/nginx.pid`
         fi
     endscript
 }

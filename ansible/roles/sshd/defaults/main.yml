@@ -1,3 +1,39 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# defaults file for sshd
+# SSH listening port
+sshd_port: 22
+
+# Address to bind to
+sshd_listen_address: "0.0.0.0"
+
+# SSH protocol version
+sshd_protocol: 2
+
+# Root login policy
+sshd_permit_root_login: "prohibit-password"
+
+# Authentication methods
+sshd_password_authentication: "no"
+sshd_pubkey_authentication: "yes"
+sshd_permit_empty_passwords: "no"
+sshd_challenge_response_authentication: "no"
+sshd_gss_api_authentication: "no"
+
+# X11 forwarding
+sshd_x11_forwarding: "no"
+
+# Session limits
+sshd_max_auth_tries: 3
+sshd_max_sessions: 5
+sshd_client_alive_interval: 300
+sshd_client_alive_count_max: 2
+sshd_login_grace_time: 60
+
+# Banner path ("none" to disable)
+sshd_banner: "none"
+
+# Allow users/groups (empty = no restriction)
+sshd_allow_users: []
+sshd_allow_groups: []
+
+# Additional custom options
+sshd_custom_options: {}

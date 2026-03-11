@@ -1,3 +1,12 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# tasks file for categraf
+- name: Check if categraf is installed
+  ansible.builtin.stat:
+    path: "{{ categraf_root_path }}"
+  register: categraf_root_path_result
+
+- name: Install categraf
+  ansible.builtin.include_tasks: install.yml
+  when: not categraf_root_path_result.stat.exists
+
+- name: Configure categraf
+  ansible.builtin.include_tasks: configure.yml

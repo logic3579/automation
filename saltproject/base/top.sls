@@ -11,7 +11,7 @@ base:
   'os_family:RedHat':
     - match: grain
     - repos.epel
-  'frontend'
+  'frontend':
     - match: nodegroup
     - nginx
   'zabbix* or G@role:monitoring':

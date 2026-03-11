@@ -2,5 +2,6 @@
 git: git
 {% elif grains['os_family'] == 'Debian' %}
 git: git-core
+{% else %}
+git: git
 {% endif %}
-

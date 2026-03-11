@@ -1,0 +1,43 @@
+---
+- name: Ensure categraf config directory exists
+  ansible.builtin.file:
+    path: "{{ categraf_config_dir }}"
+    state: directory
+    owner: "{{ categraf_user }}"
+    group: "{{ categraf_group }}"
+    mode: "0755"
+
+- name: Deploy categraf configuration
+  ansible.builtin.template:
+    src: config.toml.j2
+    dest: "{{ categraf_config_file }}"
+    owner: "{{ categraf_user }}"
+    group: "{{ categraf_group }}"
+    mode: "0644"
+    backup: true
+  notify: restart categraf
+
+- name: Deploy categraf systemd service
+  ansible.builtin.template:
+    src: categraf.service.j2
+    dest: "/etc/systemd/system/{{ categraf_service_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  notify: restart categraf
+
+- name: Set ownership on categraf directory
+  ansible.builtin.file:
+    path: "{{ categraf_root_path }}"
+    owner: "{{ categraf_user }}"
+    group: "{{ categraf_group }}"
+    state: directory
+    recurse: true
+
+- name: Enable and start categraf service
+  ansible.builtin.systemd:
+    name: "{{ categraf_service_name }}"
+    state: started
+    enabled: true
+    daemon_reload: true

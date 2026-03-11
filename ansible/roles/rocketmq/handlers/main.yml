@@ -1,26 +1,24 @@
 ---
-# handlers file for rocketmq
-- name: Boot | restarted the service using systemd
-  systemd:
+- name: restart rocketmq
+  ansible.builtin.systemd:
     name: "{{ item }}"
-    daemon_reload: yes
+    daemon_reload: true
     state: restarted
-    enabled: yes
-  listen: "notify boot handlers"
+    enabled: true
   loop:
     - rocketmq-namesrv
     - rocketmq-master
     - rocketmq-slave
 
-- name: Boot | ensure the service is running
-  wait_for:
-    connect_timeout: 3
-    delay: 15
+- name: Verify rocketmq is listening
+  ansible.builtin.wait_for:
     host: "{{ host_ip }}"
     port: "{{ item }}"
+    delay: 15
+    timeout: 60
     state: started
-  listen: "notify boot handlers"
   loop:
     - "{{ namesrv_port }}"
     - "{{ master_port }}"
     - "{{ slave_port }}"
+  listen: restart rocketmq

@@ -1,0 +1,8 @@
+---
+- name: Stop and disable unused services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop: "{{ security_disable_services }}"
+  failed_when: false

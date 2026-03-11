@@ -1,0 +1,56 @@
+# {{ ansible_managed }}
+# Hardened SSH server configuration
+
+Port {{ sshd_port }}
+ListenAddress {{ sshd_listen_address }}
+Protocol {{ sshd_protocol }}
+
+# Authentication
+PermitRootLogin {{ sshd_permit_root_login }}
+PubkeyAuthentication {{ sshd_pubkey_authentication }}
+PasswordAuthentication {{ sshd_password_authentication }}
+PermitEmptyPasswords {{ sshd_permit_empty_passwords }}
+ChallengeResponseAuthentication {{ sshd_challenge_response_authentication }}
+GSSAPIAuthentication {{ sshd_gss_api_authentication }}
+MaxAuthTries {{ sshd_max_auth_tries }}
+LoginGraceTime {{ sshd_login_grace_time }}
+
+# Session
+MaxSessions {{ sshd_max_sessions }}
+ClientAliveInterval {{ sshd_client_alive_interval }}
+ClientAliveCountMax {{ sshd_client_alive_count_max }}
+
+# Forwarding
+X11Forwarding {{ sshd_x11_forwarding }}
+
+# Banner
+{% if sshd_banner != "none" %}
+Banner {{ sshd_banner }}
+{% endif %}
+
+# User/Group restrictions
+{% if sshd_allow_users | length > 0 %}
+AllowUsers {{ sshd_allow_users | join(' ') }}
+{% endif %}
+{% if sshd_allow_groups | length > 0 %}
+AllowGroups {{ sshd_allow_groups | join(' ') }}
+{% endif %}
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Security
+UsePAM yes
+StrictModes yes
+IgnoreRhosts yes
+HostbasedAuthentication no
+PrintMotd no
+PrintLastLog yes
+TCPKeepAlive yes
+AcceptEnv LANG LC_*
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+{% for key, value in sshd_custom_options.items() %}
+{{ key }} {{ value }}
+{% endfor %}

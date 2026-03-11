@@ -1,45 +1,70 @@
 ---
-- name: Configure Step
-  block:
-    - name: Configure | copy configuration file and systemd service file
-      template:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-        mode: '0644'
-      loop:
-        - { src: nginx.service.j2, dest: /etc/systemd/system/nginx.service }
-        - { src: nginx.ld.conf.j2, dest: /etc/ld.so.conf.d/nginx.ld.conf }
+- name: Create nginx group
+  ansible.builtin.group:
+    name: nginx
+    state: present
 
-    - name: Configure | set permission for nginx_root_path
-      file:
-        path: "{{ nginx_root_path }}"
-        owner: nginx
-        group: nginx
-        state: directory
-        recurse: true
+- name: Create nginx user
+  ansible.builtin.user:
+    name: nginx
+    group: nginx
+    shell: /sbin/nologin
+    create_home: false
 
-    - name: Configure | set nginx directory and binary file permission
-      file: 
-        path: "{{ item.path }}" 
-        owner: "{{ item.user }}"
-        group: "{{ item.group }}" 
-        mode: "{{ item.mode }}" 
-        state: "{{ item.state }}" 
-        recurse: "{{ item.recurse }}"
-      loop:
-        - { path: "{{ nginx_root_path }}", mode: "0755", user: nginx, group: nginx, state: directory, recurse: yes }
-        - { path: "{{ nginx_bin }}", mode: "4755", user: root, group: root, state: file, recurse: no }
+- name: Deploy nginx configuration files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  loop:
+    - { src: nginx.service.j2, dest: /etc/systemd/system/nginx.service }
+    - { src: nginx.ld.conf.j2, dest: /etc/ld.so.conf.d/nginx.ld.conf }
+  notify: restart nginx
 
-    - name: Configure | add system library path
-      command: ldconfig
+- name: Set nginx directory permissions
+  ansible.builtin.file:
+    path: "{{ nginx_root_path }}"
+    owner: nginx
+    group: nginx
+    mode: '0755'
+    state: directory
+    recurse: true
 
-    - name: Configure | copy logrotate file
-      copy: src=nginx.logrotate dest=/opt/cron/nginx owner=root group=root mode=644
+- name: Set nginx binary permissions
+  ansible.builtin.file:
+    path: "{{ nginx_bin }}"
+    owner: root
+    group: root
+    mode: '4755'
+    state: file
 
-    - name: Configure | set logrotate cronjob
-      cron: name='logroate nginx' minute='58' hour='23' job='/usr/sbin/logrotate -f /opt/cron/nginx >> /opt/cron/cron.log 2>&1'
+- name: Reload system library paths
+  ansible.builtin.command: ldconfig
+  changed_when: false
 
-  always:
-    - name: Configure | notify boot handlers
-      command: echo notify boot handlers
-      notify: "notify boot handlers"
+- name: Ensure logrotate directory exists
+  ansible.builtin.file:
+    path: /opt/cron
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy logrotate configuration
+  ansible.builtin.copy:
+    src: nginx.logrotate
+    dest: /opt/cron/nginx
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+
+- name: Configure logrotate cron job
+  ansible.builtin.cron:
+    name: 'logrotate nginx'
+    minute: '58'
+    hour: '23'
+    job: '/usr/sbin/logrotate -f /opt/cron/nginx >> /opt/cron/cron.log 2>&1'

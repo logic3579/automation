@@ -1,0 +1,13 @@
+{#- SSH map.jinja - OS-family specific SSH settings #}
+{%- set ssh = salt['grains.filter_by']({
+    'Debian': {
+        'server': 'openssh-server',
+        'client': 'openssh-client',
+        'service': 'ssh',
+    },
+    'RedHat': {
+        'server': 'openssh-server',
+        'client': 'openssh-clients',
+        'service': 'sshd',
+    },
+}, default='Debian') %}

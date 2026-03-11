@@ -1,0 +1,29 @@
+---
+- name: Install iptables packages
+  ansible.builtin.package:
+    name:
+      - iptables
+      - iptables-persistent
+    state: present
+
+- name: Ensure sysconfig directory exists
+  ansible.builtin.file:
+    path: /etc/sysconfig
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy iptables rules
+  ansible.builtin.template:
+    src: iptables.rules.j2
+    dest: /etc/sysconfig/iptables
+    owner: root
+    group: root
+    mode: "0600"
+    backup: true
+  notify: restart iptables
+
+- name: Apply iptables rules
+  ansible.builtin.shell: /sbin/iptables-restore < /etc/sysconfig/iptables
+  changed_when: false

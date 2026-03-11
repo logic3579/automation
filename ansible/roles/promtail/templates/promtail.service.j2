@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Promtail Log Collector
+Documentation=https://grafana.com/docs/loki/latest/send-data/promtail/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{ promtail_user }}
+Group={{ promtail_group }}
+ExecStart={{ promtail_bin }} -config.file={{ promtail_config_file }}
+Restart=on-failure
+RestartSec=10s
+LimitNOFILE=65536
+WorkingDirectory={{ promtail_root_path }}
+
+[Install]
+WantedBy=multi-user.target

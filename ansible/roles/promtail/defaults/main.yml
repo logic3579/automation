@@ -1,3 +1,41 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# defaults file for promtail
+# Promtail version to install
+promtail_version: "3.4.2"
+
+# Installation path
+promtail_root_path: /opt/promtail
+
+# System user and group
+promtail_user: promtail
+promtail_group: promtail
+
+# Promtail server settings
+promtail_http_listen_port: 9080
+promtail_grpc_listen_port: 0
+
+# Loki client settings
+promtail_loki_url: "http://127.0.0.1:3100/loki/api/v1/push"
+promtail_loki_tenant_id: ""
+
+# Positions file
+promtail_positions_file: /opt/promtail/positions.yaml
+
+# Scrape configs
+promtail_scrape_configs:
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          host: "{{ ansible_hostname }}"
+          __path__: /var/log/*.log
+  - job_name: journal
+    journal:
+      max_age: 12h
+      labels:
+        job: systemd-journal
+        host: "{{ ansible_hostname }}"
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: unit

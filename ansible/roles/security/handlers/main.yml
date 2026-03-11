@@ -1,3 +1,4 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# handlers file for security
+- name: restart iptables
+  ansible.builtin.shell: /sbin/iptables-restore < /etc/sysconfig/iptables
+  changed_when: true

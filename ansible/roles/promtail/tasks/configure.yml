@@ -1,0 +1,47 @@
+---
+- name: Create promtail group
+  ansible.builtin.group:
+    name: "{{ promtail_group }}"
+    state: present
+
+- name: Create promtail user
+  ansible.builtin.user:
+    name: "{{ promtail_user }}"
+    group: "{{ promtail_group }}"
+    shell: /sbin/nologin
+    create_home: false
+
+- name: Deploy promtail configuration
+  ansible.builtin.template:
+    src: promtail-config.yaml.j2
+    dest: "{{ promtail_config_file }}"
+    owner: "{{ promtail_user }}"
+    group: "{{ promtail_group }}"
+    mode: "0644"
+    backup: true
+  notify: restart promtail
+
+- name: Deploy promtail systemd service
+  ansible.builtin.template:
+    src: promtail.service.j2
+    dest: "/etc/systemd/system/{{ promtail_service_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  notify: restart promtail
+
+- name: Set ownership on promtail directory
+  ansible.builtin.file:
+    path: "{{ promtail_root_path }}"
+    owner: "{{ promtail_user }}"
+    group: "{{ promtail_group }}"
+    state: directory
+    recurse: true
+
+- name: Enable and start promtail service
+  ansible.builtin.systemd:
+    name: "{{ promtail_service_name }}"
+    state: started
+    enabled: true
+    daemon_reload: true

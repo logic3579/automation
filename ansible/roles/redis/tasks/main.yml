@@ -1,14 +1,19 @@
 ---
-# tasks file for redis
-- name: Pre-check | check if redis_root_path exists
-  stat: 
+- name: Check if redis is installed
+  ansible.builtin.stat:
     path: "{{ redis_root_path }}"
-  register: redis_root_path_result
+  register: redis_installed
 
-- include_tasks: install.yml
-  when: not redis_root_path_result.stat.exists
+- name: Install redis
+  ansible.builtin.include_tasks:
+    file: install.yml
+    apply:
+      tags: redis
+  when: not redis_installed.stat.exists
 
-- import_tasks: configure.yml
+- name: Configure redis
+  ansible.builtin.import_tasks: configure.yml
 
-- import_tasks: cluster.yml
+- name: Initialize redis cluster
+  ansible.builtin.import_tasks: cluster.yml
   when: redis_cluster_enabled == "yes"

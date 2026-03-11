@@ -1,0 +1,3 @@
+# Salt runtime
+*.pyc
+__pycache__/

@@ -1,0 +1,16 @@
+# Vault password files
+*.vault
+
+# Retry files
+*.retry
+
+# Runtime directories
+tmp/
+cache/
+plugins/
+
+# Log files
+ansible.log
+
+# SSH private keys
+keys/*.key

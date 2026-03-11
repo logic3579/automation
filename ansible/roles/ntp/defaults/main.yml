@@ -1,2 +1,23 @@
 ---
-# defaults file for ntp
+# NTP service to use: chrony or ntp
+ntp_service: chrony
+
+# NTP servers
+ntp_servers:
+  - ntp.aliyun.com
+  - ntp1.aliyun.com
+  - ntp.tencent.com
+  - cn.pool.ntp.org
+
+# Timezone
+ntp_timezone: Asia/Shanghai
+
+# Whether to enable NTP service on boot
+ntp_enabled: true
+
+# Chrony-specific settings
+chrony_makestep_threshold: 1
+chrony_makestep_limit: 3
+
+# Allow NTP clients from these networks (empty = no clients allowed)
+ntp_allow_networks: []

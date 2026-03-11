@@ -1,2 +1,36 @@
 ---
 # defaults file for sysctl
+# User-configurable variables
+
+# Kernel and network tuning parameters
+sysctl_params:
+  - { name: 'vm.swappiness', value: '0' }
+  - { name: 'net.ipv4.ip_forward', value: '0' }
+  - { name: 'net.ipv4.tcp_syncookies', value: '1' }
+  - { name: 'net.ipv4.ip_local_port_range', value: '10240 61001' }
+  - { name: 'net.ipv4.tcp_syn_retries', value: '2' }
+  - { name: 'net.ipv4.tcp_synack_retries', value: '2' }
+  - { name: 'net.ipv4.tcp_keepalive_time', value: '600' }
+  - { name: 'net.ipv4.tcp_keepalive_intvl', value: '15' }
+  - { name: 'net.ipv4.tcp_max_syn_backlog', value: '16384' }
+  - { name: 'net.core.netdev_max_backlog', value: '16384' }
+  - { name: 'net.core.somaxconn', value: '16384' }
+  - { name: 'net.ipv6.conf.all.disable_ipv6', value: '1' }
+  - { name: 'net.ipv6.conf.default.disable_ipv6', value: '1' }
+  - { name: 'net.ipv4.icmp_echo_ignore_broadcasts', value: '1' }
+  - { name: 'net.ipv4.icmp_ignore_bogus_error_responses', value: '1' }
+  - { name: 'net.ipv4.conf.all.send_redirects', value: '0' }
+  - { name: 'net.ipv4.conf.default.send_redirects', value: '0' }
+  - { name: 'net.ipv4.conf.all.rp_filter', value: '1' }
+  - { name: 'net.ipv4.conf.default.rp_filter', value: '1' }
+  - { name: 'net.ipv4.tcp_max_orphans', value: '3276800' }
+  - { name: 'net.ipv4.tcp_tw_reuse', value: '1' }
+  - { name: 'net.ipv4.tcp_timestamps', value: '0' }
+
+# BBR congestion control parameters
+sysctl_bbr_params:
+  - { name: 'net.core.default_qdisc', value: 'fq' }
+  - { name: 'net.ipv4.tcp_congestion_control', value: 'bbr' }
+
+# Set to true to enable BBR congestion control
+sysctl_bbr_enabled: true

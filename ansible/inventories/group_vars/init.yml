@@ -1,0 +1,6 @@
+ansible_user: root
+ansible_port: 22
+# Use ansible-vault to encrypt: ansible-vault encrypt_string 'your_password' --name 'ansible_ssh_pass' --vault-id pwd.vault
+ansible_ssh_pass: !vault |
+  $ANSIBLE_VAULT;1.1;AES256
+  REPLACE_WITH_VAULT_ENCRYPTED_VALUE

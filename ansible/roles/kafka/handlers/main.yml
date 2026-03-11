@@ -1,21 +1,16 @@
 ---
-# handlers file for kafka
-- name: Boot | restarted the service using systemd
-  systemd:
+- name: restart kafka
+  ansible.builtin.systemd:
     name: kafka
-    daemon_reload: yes
+    daemon_reload: true
     state: restarted
-    enabled: yes
-  listen: "notify boot handlers"
+    enabled: true
 
-- name: Boot | ensure the service is running
-  wait_for:
-    connect_timeout: 3
-    delay: 15
+- name: Verify kafka is listening
+  ansible.builtin.wait_for:
     host: "{{ host_ip }}"
-    port: "{{ item }}"
+    port: 9092
+    delay: 15
+    timeout: 60
     state: started
-  listen: "notify boot handlers"
-  loop:
-    - 9092
-    #- 9093
+  listen: restart kafka

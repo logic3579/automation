@@ -92,6 +92,7 @@ packages-archive-wanted-download-{{ package }}:
       {%- if 'hashsum' in archive.dl and archive.dl.hashsum %}
     - source_hash: {{ archive.dl.hashsum }}
       {%- else %}
+    # WARNING: No hashsum provided, archive integrity cannot be verified
     - skip_verify: True
       {%- endif %}
     - retry: {{ packages.retry_options|json }}

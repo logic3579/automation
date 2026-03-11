@@ -1,11 +1,18 @@
 ---
-# tasks file for kafka
-- name: Pre-check | check if kafka_root_path exists
-  stat: 
+- name: Check if kafka is installed
+  ansible.builtin.stat:
     path: "{{ kafka_root_path }}"
-  register: kafka_root_path_result
+  register: kafka_installed
 
-- include_tasks: install.yml
-  when: not kafka_root_path_result.stat.exists
+- name: Install kafka
+  ansible.builtin.include_tasks:
+    file: install.yml
+    apply:
+      tags: kafka
+  when: not kafka_installed.stat.exists
 
-- include_tasks: configure.yml
+- name: Configure kafka
+  ansible.builtin.include_tasks:
+    file: configure.yml
+    apply:
+      tags: kafka

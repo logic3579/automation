@@ -1,2 +1,24 @@
 ---
 # defaults file for rocketmq
+# User-configurable variables
+
+# Installation settings
+rocketmq_root_path: /opt/rocketmq
+rocketmq_version: "5.3.0"
+rocketmq_pkg_url: "https://dist.apache.org/repos/dist/release/rocketmq/{{ rocketmq_version }}/rocketmq-all-{{ rocketmq_version }}-bin-release.zip"
+
+# Feature toggles
+rocketmq_dashboard_enabled: false
+rocketmq_exporter_enabled: false
+
+# JVM settings
+namesrv_jvm_memory: "-Xms2g -Xmx2g"
+broker_jvm_memory: "-Xms2g -Xmx2g"
+
+# Cluster settings
+cluster_name: DefaultCluster
+
+# Port settings
+namesrv_port: 9876
+master_port: 6888
+slave_port: 7888

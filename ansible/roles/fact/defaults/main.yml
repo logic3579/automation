@@ -1,2 +1,6 @@
 ---
-# defaults file for fact
+# Custom facts directory
+fact_dir: /etc/ansible/facts.d
+
+# Fact filename
+fact_filename: forbidden.fact

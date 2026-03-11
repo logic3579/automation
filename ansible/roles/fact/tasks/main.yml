@@ -1,12 +1,22 @@
 ---
 # tasks file for fact
-- name: Create directory
-  file: path={{ dir }} state=directory recurse=yes
-  when: ansible_hostname == 'node1'
 
-- name: Synchronize factfile
-  template: src=forbidden.fact.j2 dest={{ dir }}/{{ factfile }} 
+- name: Create custom facts directory
+  ansible.builtin.file:
+    path: "{{ fact_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
 
-- name: Debug custom fact value
-  ansible.builtin.debug:
-    var: ansible_local.forbidden.forbid
+- name: Deploy custom fact file
+  ansible.builtin.template:
+    src: forbidden.fact.j2
+    dest: "{{ fact_dir }}/{{ fact_filename }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload ansible facts
+  ansible.builtin.setup:
+    filter: ansible_local

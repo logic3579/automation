@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+[global]
+hostname = "{{ categraf_hostname | default(ansible_hostname) }}"
+interval = {{ categraf_interval }}
+providers = {{ categraf_providers | to_json }}
+{% if categraf_global_labels %}
+
+[global.labels]
+{% for key, value in categraf_global_labels.items() %}
+{{ key }} = "{{ value }}"
+{% endfor %}
+{% endif %}
+
+{% for writer in categraf_writers %}
+[[writers]]
+url = "{{ writer.url }}"
+basic_auth_user = "{{ writer.basic_auth_user | default('') }}"
+basic_auth_pass = "{{ writer.basic_auth_pass | default('') }}"
+timeout = {{ writer.timeout | default(5000) }}
+dial_timeout = {{ writer.dial_timeout | default(2500) }}
+max_idle_conns_per_host = {{ writer.max_idle_conns_per_host | default(100) }}
+
+{% endfor %}

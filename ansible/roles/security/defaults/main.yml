@@ -1,3 +1,40 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# defaults file for security
+# Firewall
+security_firewall_enabled: true
+security_firewall_backend: iptables
+security_allowed_tcp_ports:
+  - 22
+security_allowed_udp_ports: []
+
+# Limits
+security_limits:
+  - { domain: '*', type: '-', item: nofile, value: 655350 }
+  - { domain: '*', type: '-', item: nproc, value: 655350 }
+  - { domain: root, type: '-', item: nofile, value: 655350 }
+  - { domain: root, type: '-', item: nproc, value: 655350 }
+
+# Password policy
+security_password_max_days: 90
+security_password_min_days: 7
+security_password_min_len: 12
+security_password_warn_age: 14
+
+# Core dumps
+security_disable_core_dumps: true
+
+# Unused services to disable
+security_disable_services:
+  - avahi-daemon
+  - cups
+  - rpcbind
+
+# Filesystem hardening
+security_disable_usb: false
+security_disable_filesystems:
+  - cramfs
+  - freevxfs
+  - jffs2
+  - hfs
+  - hfsplus
+  - squashfs
+  - udf

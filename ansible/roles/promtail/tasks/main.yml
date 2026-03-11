@@ -1,3 +1,12 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# tasks file for promtail
+- name: Check if promtail is installed
+  ansible.builtin.stat:
+    path: "{{ promtail_root_path }}"
+  register: promtail_root_path_result
+
+- name: Install promtail
+  ansible.builtin.include_tasks: install.yml
+  when: not promtail_root_path_result.stat.exists
+
+- name: Configure promtail
+  ansible.builtin.include_tasks: configure.yml

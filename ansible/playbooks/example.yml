@@ -42,7 +42,7 @@
 
     - name: Ansible buildin template
       ansible.builtin.template:
-        scr: templates/test.j2
+        src: templates/test.j2
         dest: /tmp/hostname
         mode: 0644
 

@@ -1,2 +1,23 @@
 ---
 # defaults file for redis
+# User-configurable variables
+
+# Installation settings
+redis_root_path: /opt/redis
+redis_version: "7.0.11"
+redis_pkg_url: "https://download.redis.io/releases/redis-{{ redis_version }}.tar.gz"
+
+# Redis instance ports (standalone mode)
+redis_ports: [6379]
+
+# Redis cluster ports (cluster mode - 2 per host)
+redis_cluster_ports: [7001, 7002, 7003, 7004, 7005, 7006]
+
+# redis.conf settings
+# Use ansible-vault to encrypt: ansible-vault encrypt_string 'your_password' --name 'redis_password' --vault-id pwd.vault
+redis_password: !vault |
+  $ANSIBLE_VAULT;1.1;AES256
+  REPLACE_WITH_VAULT_ENCRYPTED_VALUE
+redis_maxmemory: "6gb"
+redis_aof_enabled: "no"
+redis_cluster_enabled: "no"

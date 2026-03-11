@@ -1,18 +1,16 @@
 ---
-# handlers file for nginx
-- name: Boot | restarted the service using systemd
-  systemd:
+- name: restart nginx
+  ansible.builtin.systemd:
     name: nginx
-    daemon_reload: yes
+    daemon_reload: true
     state: restarted
-    enabled: yes
-  listen: "notify boot handlers"
+    enabled: true
 
-- name: Boot | ensure the service is running
-  wait_for:
-    connect_timeout: 3
-    delay: 15
+- name: Verify nginx is listening
+  ansible.builtin.wait_for:
     host: "{{ host_ip }}"
     port: "{{ nginx_port }}"
+    delay: 15
+    timeout: 60
     state: started
-  listen: "notify boot handlers"
+  listen: restart nginx

@@ -1,0 +1,55 @@
+---
+- name: Create categraf group
+  ansible.builtin.group:
+    name: "{{ categraf_group }}"
+    state: present
+
+- name: Create categraf user
+  ansible.builtin.user:
+    name: "{{ categraf_user }}"
+    group: "{{ categraf_group }}"
+    shell: /sbin/nologin
+    create_home: false
+
+- name: Check local categraf package
+  ansible.builtin.stat:
+    path: "{{ role_path }}/files/{{ categraf_pkg_name }}"
+  delegate_to: localhost
+  become: false
+  register: categraf_pkg_result
+  run_once: true
+
+- name: Download categraf package
+  ansible.builtin.get_url:
+    url: "{{ categraf_pkg_url }}"
+    dest: "{{ role_path }}/files/{{ categraf_pkg_name }}"
+    validate_certs: true
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when: not categraf_pkg_result.stat.exists
+
+- name: Copy categraf package to remote
+  ansible.builtin.copy:
+    src: "{{ categraf_pkg_name }}"
+    dest: "/tmp/{{ categraf_pkg_name }}"
+
+- name: Unarchive categraf package
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ categraf_pkg_name }}"
+    dest: /opt
+    mode: "0755"
+    remote_src: true
+
+- name: Create symbolic link for categraf
+  ansible.builtin.file:
+    src: "/opt/{{ categraf_dir_name }}"
+    dest: "{{ categraf_root_path }}"
+    owner: "{{ categraf_user }}"
+    group: "{{ categraf_group }}"
+    state: link
+
+- name: Remove categraf temporary package
+  ansible.builtin.file:
+    path: "/tmp/{{ categraf_pkg_name }}"
+    state: absent

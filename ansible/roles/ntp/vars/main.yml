@@ -1,2 +1,29 @@
 ---
-# vars file for ntp
+# OS-family specific package and service names
+ntp_packages:
+  chrony:
+    Debian: chrony
+    RedHat: chrony
+  ntp:
+    Debian: ntp
+    RedHat: ntp
+
+ntp_service_names:
+  chrony:
+    Debian: chrony
+    RedHat: chronyd
+  ntp:
+    Debian: ntp
+    RedHat: ntpd
+
+ntp_config_files:
+  chrony:
+    Debian: /etc/chrony/chrony.conf
+    RedHat: /etc/chrony.conf
+  ntp:
+    Debian: /etc/ntp.conf
+    RedHat: /etc/ntp.conf
+
+ntp_package: "{{ ntp_packages[ntp_service][ansible_os_family] }}"
+ntp_service_name: "{{ ntp_service_names[ntp_service][ansible_os_family] }}"
+ntp_config_file: "{{ ntp_config_files[ntp_service][ansible_os_family] }}"

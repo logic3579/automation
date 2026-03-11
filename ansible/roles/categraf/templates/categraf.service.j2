@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Categraf Monitoring Agent
+Documentation=https://github.com/flashcatcloud/categraf
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{ categraf_user }}
+Group={{ categraf_group }}
+ExecStart={{ categraf_bin }} -configs={{ categraf_config_dir }}
+Restart=on-failure
+RestartSec=10s
+LimitNOFILE=65536
+WorkingDirectory={{ categraf_root_path }}
+
+[Install]
+WantedBy=multi-user.target

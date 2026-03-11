@@ -6,8 +6,8 @@ include:
 
 testdb_user:
   mysql_user.present:
-    - name: {{ salt['pillar.get']('mysql:lookup:user') }}
-    - password: {{ salt['pillar.get']('mysql:lookup:password') }}
-    - host: {{ salt['pillar.get']('mysql:lookup:host') }}
+    - name: {{ salt['pillar.get']('mysql:lookup:user', 'default_user') }}
+    - password: {{ salt['pillar.get']('mysql:lookup:password', '') }}
+    - host: {{ salt['pillar.get']('mysql:lookup:host', 'localhost') }}
     - require:
       - sls: mysql.database

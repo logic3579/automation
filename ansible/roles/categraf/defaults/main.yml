@@ -1,3 +1,26 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# defaults file for categraf
+# Categraf version to install
+categraf_version: "0.4.5"
+
+# Installation path
+categraf_root_path: /opt/categraf
+
+# System user and group
+categraf_user: categraf
+categraf_group: categraf
+
+# config.toml settings
+categraf_hostname: ""
+categraf_global_labels: {}
+categraf_interval: 15
+categraf_providers:
+  - "local"
+
+# Output writer settings (Nightingale/Prometheus remote write)
+categraf_writers:
+  - url: "http://127.0.0.1:17000/prometheus/v1/write"
+    basic_auth_user: ""
+    basic_auth_pass: ""
+    timeout: 5000
+    dial_timeout: 2500
+    max_idle_conns_per_host: 100

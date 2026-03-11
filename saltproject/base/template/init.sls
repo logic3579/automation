@@ -1,12 +1,13 @@
-{% from "template/map.jinja" import apache with context %}
+{% from "apache/map.jinja" import apache with context %}
 
-template print:
+install_apache_packages:
   pkg.installed:
-    - name: {{ apache }}
-    - name: {{ pillar['apache'] }}
-    - name: {{ pillar['git'] }}
+    - pkgs:
+      - {{ apache.server }}
+      - {{ salt['pillar.get']('git', 'git') }}
     - fire_event: True
 
+manage_apache_config:
   file.managed:
     - name: /tmp/{{ grains['os'] }}.conf
     - source: salt://test.conf
@@ -16,7 +17,7 @@ template print:
 {% for DIR in DIRS %}
 {{ DIR }}:
   file.directory:
-    - user: {{ salt.cmd.run('whoami') }}
-    - group: {{ salt.cmd.run('whoami') }}
-    - mode: 774
+    - user: root
+    - group: root
+    - mode: '0774'
 {% endfor %}

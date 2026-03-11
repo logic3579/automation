@@ -1,2 +1,3 @@
 ---
-# defaults file for audit
+# History size for command audit
+audit_history_size: 100000

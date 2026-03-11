@@ -1,0 +1,10 @@
+---
+- name: Set resource limits via pam_limits
+  community.general.pam_limits:
+    domain: "{{ item.domain }}"
+    limit_type: "{{ item.type }}"
+    limit_item: "{{ item.item }}"
+    value: "{{ item.value }}"
+  loop: "{{ security_limits }}"
+  loop_control:
+    label: "{{ item.domain }} {{ item.item }}={{ item.value }}"

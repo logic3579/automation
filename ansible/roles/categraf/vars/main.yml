@@ -1,3 +1,13 @@
-#SPDX-License-Identifier: MIT-0
 ---
 # vars file for categraf
+categraf_arch_map:
+  x86_64: amd64
+  aarch64: arm64
+categraf_arch: "{{ categraf_arch_map[ansible_architecture] | default('amd64') }}"
+categraf_pkg_name: "categraf-v{{ categraf_version }}-linux-{{ categraf_arch }}.tar.gz"
+categraf_pkg_url: "https://github.com/flashcatcloud/categraf/releases/download/v{{ categraf_version }}/{{ categraf_pkg_name }}"
+categraf_dir_name: "categraf-v{{ categraf_version }}-linux-{{ categraf_arch }}"
+categraf_bin: "{{ categraf_root_path }}/categraf"
+categraf_config_dir: "{{ categraf_root_path }}/conf"
+categraf_config_file: "{{ categraf_config_dir }}/config.toml"
+categraf_service_name: categraf

@@ -1,30 +1,27 @@
 ---
-# handlers file for redis
-- name: Boot | restarted the service using systemd
-  systemd:
+- name: restart redis
+  ansible.builtin.systemd:
     name: "redis-{{ redis_port }}"
-    daemon_reload: yes
+    daemon_reload: true
     state: restarted
-    enabled: yes
-  listen: "notify boot handlers"
+    enabled: true
 
-- name: Boot | ensure the service is running
-  wait_for:
-    connect_timeout: 3
-    delay: 15
+- name: Verify redis is listening
+  ansible.builtin.wait_for:
     host: "{{ host_ip }}"
     port: "{{ redis_port }}"
+    delay: 15
+    timeout: 60
     state: started
-  listen: "notify boot handlers"
+  listen: restart redis
 
-- name: Cluster | init cluster
-  command: ./bin/redis-cli --cluster create {{ redis_cluster_init_info }}  --cluster-replicas 1 --cluster-yes -a {{ redis_password }}
+- name: init redis cluster
+  ansible.builtin.command: ./bin/redis-cli --cluster create {{ redis_cluster_init_info }} --cluster-replicas 1 --cluster-yes -a {{ redis_password }}
   args:
     chdir: "{{ redis_root_path }}"
-  listen: "notify cluster handlers"
   register: init_cluster_result
 
-- name: Cluster | print init cluster result
-  debug:
+- name: Print cluster initialization result
+  ansible.builtin.debug:
     msg: "{{ init_cluster_result.stdout }}"
-  listen: "notify cluster handlers"
+  listen: init redis cluster

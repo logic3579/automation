@@ -1,0 +1,26 @@
+{{ ansible_managed | comment }}
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+
+# Allow established and related connections
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Allow loopback interface
+-A INPUT -i lo -j ACCEPT
+
+# Allow ICMP ping
+-A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+{% for port in security_allowed_tcp_ports %}
+# Allow TCP port {{ port }}
+-A INPUT -p tcp --dport {{ port }} -m state --state NEW -j ACCEPT
+{% endfor %}
+
+{% for port in security_allowed_udp_ports %}
+# Allow UDP port {{ port }}
+-A INPUT -p udp --dport {{ port }} -m state --state NEW -j ACCEPT
+{% endfor %}
+
+COMMIT

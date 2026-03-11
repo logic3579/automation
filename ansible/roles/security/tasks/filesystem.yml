@@ -1,0 +1,40 @@
+---
+- name: Disable unneeded kernel filesystem modules
+  ansible.builtin.template:
+    src: modprobe-disable.conf.j2
+    dest: "/etc/modprobe.d/disable-{{ item }}.conf"
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  loop: "{{ security_disable_filesystems }}"
+  vars:
+    module_name: "{{ item }}"
+
+- name: Disable USB storage module
+  ansible.builtin.copy:
+    content: "install usb-storage /bin/true\n"
+    dest: /etc/modprobe.d/disable-usb-storage.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: security_disable_usb
+
+- name: Disable core dumps via limits.conf
+  ansible.builtin.lineinfile:
+    path: /etc/security/limits.conf
+    regexp: '^\*.*hard.*core'
+    line: "*               hard    core            0"
+    state: present
+  when: security_disable_core_dumps
+
+- name: Disable core dumps via sysctl
+  ansible.builtin.copy:
+    content: |
+      # Disable core dumps
+      fs.suid_dumpable = 0
+    dest: /etc/sysctl.d/50-disable-coredumps.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: security_disable_core_dumps

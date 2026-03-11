@@ -1,4 +1,6 @@
-- name: Cluster | notify cluster handlers
-  command: echo notify cluster handlers
-  notify: "notify cluster handlers"
+---
+- name: Trigger redis cluster initialization
+  ansible.builtin.set_fact:
+    redis_cluster_init: true
+  notify: init redis cluster
   run_once: true

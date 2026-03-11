@@ -1,2 +1,11 @@
 ---
 # defaults file for nginx
+# User-configurable variables
+
+# Installation settings
+nginx_root_path: /opt/nginx
+nginx_version: "1.20.1"
+nginx_pkg_name: "nginx-{{ nginx_version }}.tar.gz"
+
+# Service settings
+nginx_port: 80

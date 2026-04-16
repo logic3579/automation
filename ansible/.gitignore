@@ -12,5 +12,6 @@ plugins/
 # Log files
 ansible.log
 
-# SSH private keys
+# SSH keys (private and public)
 keys/*.key
+keys/*.pub

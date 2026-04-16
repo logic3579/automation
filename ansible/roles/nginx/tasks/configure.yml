@@ -38,12 +38,19 @@
     path: "{{ nginx_bin }}"
     owner: root
     group: root
-    mode: '4755'
+    mode: '0755'
     state: file
+
+- name: Allow nginx to bind privileged ports
+  community.general.capabilities:
+    path: "{{ nginx_bin }}"
+    capability: cap_net_bind_service=+ep
+    state: present
 
 - name: Reload system library paths
   ansible.builtin.command: ldconfig
-  changed_when: false
+  register: ldconfig_result
+  changed_when: ldconfig_result.rc == 0
 
 - name: Ensure logrotate directory exists
   ansible.builtin.file:

@@ -52,4 +52,3 @@
     creates: "{{ redis_root_path }}"
     chdir: "{{ redis_src_path }}/{{ redis_dir_name }}"
     executable: /bin/bash
-  register: compile_result

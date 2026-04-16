@@ -22,8 +22,10 @@
     group: root
     mode: "0600"
     backup: true
+  register: iptables_rules
   notify: restart iptables
 
 - name: Apply iptables rules
-  ansible.builtin.shell: /sbin/iptables-restore < /etc/sysconfig/iptables
-  changed_when: false
+  ansible.builtin.command: /sbin/iptables-restore /etc/sysconfig/iptables
+  changed_when: true
+  when: iptables_rules is changed

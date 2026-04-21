@@ -9,8 +9,8 @@ Infrastructure automation repository containing **Ansible** roles/playbooks and 
 ## Repository Structure
 
 - `ansible/` — Ansible automation (primary tool), deployed standalone to `~/ansible/` on management machines
-  - `inventories/` — Host inventories (`init.hosts`, `test.hosts`, `prod.hosts`) with `group_vars/` for per-group variables (all, east, west, init)
-  - `playbooks/` — Playbook entry points (`init.yml` for new server bootstrap; `kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml` for services; `example.yml` for reference)
+  - `inventories/` — Host inventories (`hosts` for services, `init.hosts` for bootstrap) with `group_vars/` for per-group variables (all, east, west, init)
+  - `playbooks/` — Playbook entry points (`init.yml` for new server bootstrap; `kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml` for services)
   - `roles/` — Standard Ansible role layout (`tasks/`, `handlers/`, `defaults/`, `vars/`, `templates/`, `files/`)
   - `keys/` — SSH keys for east/west regions
   - `ansible.cfg` — Config using `~/ansible/` as deployment root, `~/.ansible/tmp` for runtime temp
@@ -28,20 +28,18 @@ Infrastructure automation repository containing **Ansible** roles/playbooks and 
 # Ping hosts using default inventory (hosts per ansible.cfg)
 ansible all -m ping
 
-# Ping specific hosts
-ansible -i inventories/prod.hosts east -m ping
-
-# Run a playbook (default inventory)
+# Run a playbook (default inventory, all hosts)
 ansible-playbook playbooks/nginx.yml
 
-# Run a playbook against specific hosts
-ansible-playbook -i inventories/prod.hosts playbooks/redis.yml -e "hosts_var=172.16.1.1"
+# Run a playbook with --limit to target specific groups
+ansible-playbook playbooks/kafka.yml --limit kafka_east
+ansible-playbook playbooks/redis.yml --limit redis_east -e "redis_cluster_enabled=yes"
 
 # Initial server bootstrap (requires vault password)
-ansible-playbook -i inventories/init.hosts --vault-id pwd.vault -e "hosts_var=10.0.10.12" playbooks/init.yml
+ansible-playbook -i inventories/init.hosts playbooks/init.yml --limit init_east --vault-id pwd.vault
 
 # Dry run (check mode)
-ansible-playbook playbooks/example.yml -C
+ansible-playbook playbooks/nginx.yml -C
 
 # Vault operations
 ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
@@ -162,8 +160,8 @@ roles/<name>/
 
 ## Architecture Notes
 
-- **Inventory model**: Hosts grouped by region (`east`, `west`) with sub-groups for function (`dbservers`, `webservers`). Group vars in `inventories/group_vars/` set region-specific SSH keys, ports, and credentials.
-- **Global defaults** in `group_vars/all.yml`: custom SSH port (300), `ansible` user with key-based auth, vault-encrypted become password.
+- **Inventory model**: Hosts grouped by region (`east`, `west`) with sub-groups for service (`kafka_east`, `nginx_east`, `redis_east`, `rocketmq_east`, etc.). Playbooks use `hosts: all` and target specific groups via `--limit`. Group vars in `inventories/group_vars/` set region-specific SSH keys and credentials.
+- **Global defaults** in `group_vars/all.yml`: custom SSH port (300), `ansible` user with key-based auth, vault-encrypted become password. Key paths are relative (`keys/east.key`).
 - **Credentials**: All passwords/secrets use Ansible Vault (`!vault |` encrypted strings). Never store plaintext credentials.
 - **Existing roles**: audit, categraf, fact, kafka, nginx, ntp, promtail, redis, rocketmq, security, sshd, sysctl.
 - **Salt states** use the `map.jinja` pattern for cross-platform support (Debian/RedHat).

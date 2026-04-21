@@ -1,12 +1,11 @@
 ---
 # Usage:
 # standalone
-#   ansible-playbook -e "hosts_var=10.0.10.12" playbooks/redis.yml
-#   ansible-playbook -e "hosts_var=10.0.10.12,10.0.10.13" playbooks/redis.yml
+#   ansible-playbook playbooks/redis.yml --limit redis_east
 # cluster
-#   ansible-playbook -e "hosts_var=10.0.10.12,10.0.10.13,10.0.10.14" -e "redis_cluster_enabled=yes" playbooks/redis.yml
+#   ansible-playbook playbooks/redis.yml --limit redis_east -e "redis_cluster_enabled=yes"
 
-- hosts: "{{ hosts_var }}"
+- hosts: redis
   remote_user: root
   become: true
   become_method: su

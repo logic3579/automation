@@ -1,10 +1,7 @@
 ---
 # Usage:
-# option1. use ansible-vault password
-#   ansible-playbook -i inventories/initial.hosts --vault-id pwd.vault -e "hosts_var=localhost" playbooks/initial.yml
-# option2. use vars_prompt password
-#   ansible-playbook -i inventories/initial.hosts -e "hosts_var=10.0.10.12,10.0.10.13" playbooks/initial.yml
-- hosts: "{{ hosts_var }}"
+#   ansible-playbook -i inventories/init.hosts playbooks/init.yml --limit init_east --vault-id pwd.vault
+- hosts: all
   vars:
     ansible_port: 22
     ansible_user: root
@@ -18,19 +15,9 @@
       66353936383230623332653562303137643332636638386437326461396535626637356331656139
       6533613736623532380a383636343732363331393634623231393761306264336635333739333865
       3433
-  #vars_prompt:
-  #  - name: "new_root_password"
-  #    prompt: "Please enter new root password"
-  #    private: yes
-  #    encrypt: "md5_crypt"
-  #    confirm: yes
-  #    salt_size: 7
-  #tasks:
-  #  - debug:
-  #      msg: "{{ new_root_password }}"
   roles:
     - audit
     - ntp
-    - security # iptables, ulimit
+    - security
     - sysctl
     - { role: sshd, new_root_password: "{{ new_root_password }}" }

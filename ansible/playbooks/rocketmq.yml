@@ -1,13 +1,13 @@
 ---
 # Usage:
 # standalone mode
-#   ansible-playbook -e "hosts_var=10.0.10.12" playbooks/rocketmq.yml
+#   ansible-playbook playbooks/rocketmq.yml --limit rocketmq_east
 # 2m-2s-sync mode
-#   ansible-playbook -e "hosts_var=10.0.10.12,10.0.10.13" playbooks/rocketmq.yml
+#   ansible-playbook playbooks/rocketmq.yml --limit rocketmq_east
 # failover mode
-#   ansible-playbook -e "hosts_var=10.0.10.12,10.0.10.13,10.0.10.14" playbooks/rocketmq.yml
+#   ansible-playbook playbooks/rocketmq.yml --limit rocketmq_east
 
-- hosts: "{{ hosts_var }}"
+- hosts: all
   remote_user: root
   become: true
   become_method: su

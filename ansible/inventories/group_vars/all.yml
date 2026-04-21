@@ -5,8 +5,7 @@ ansible_port: 300
 ansible_ssh_pass: !vault |
   $ANSIBLE_VAULT;1.1;AES256
   REPLACE_WITH_VAULT_ENCRYPTED_VALUE
-ansible_ssh_private_key_file: /opt/ansible/keys/all.key
+ansible_ssh_private_key_file: keys/all.key
 ansible_become_pass: !vault |
   $ANSIBLE_VAULT;1.1;AES256
   REPLACE_WITH_VAULT_ENCRYPTED_VALUE
-hostname_prefix: PROD

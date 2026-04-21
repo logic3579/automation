@@ -1,0 +1,7 @@
+---
+# OS-family specific sudo group
+_user_sudo_groups:
+  Debian: sudo
+  RedHat: wheel
+
+user_sudo_group: "{{ _user_sudo_groups[ansible_os_family] }}"

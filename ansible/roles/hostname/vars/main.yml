@@ -1,0 +1,4 @@
+---
+# Computed hostname: prefix + last two octets of default IPv4, lowercased
+_hostname_generated: "{{ ((hostname_prefix | default('SRV', true)) ~ '-' ~ ansible_default_ipv4.address.split('.')[-2:] | join('-')) | lower }}"
+_hostname: "{{ hostname_name if (hostname_name | length > 0) else _hostname_generated }}"

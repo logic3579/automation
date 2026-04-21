@@ -1,0 +1,18 @@
+---
+# Operations user name
+user_name: ansible
+
+# Operations user password (vault-encrypted recommended)
+user_password: ""
+
+# User login shell
+user_shell: /bin/bash
+
+# Allow passwordless sudo
+user_sudo_nopasswd: true
+
+# SSH public key content for authorized_keys
+user_ssh_public_key: ""
+
+# New root password (vault-encrypted recommended)
+user_root_password: ""

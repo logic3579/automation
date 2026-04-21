@@ -160,10 +160,11 @@ roles/<name>/
 
 ## Architecture Notes
 
-- **Inventory model**: Hosts grouped by region (`east`, `west`) with sub-groups for service (`kafka_east`, `nginx_east`, `redis_east`, `rocketmq_east`, etc.). Playbooks use `hosts: all` and target specific groups via `--limit`. Group vars in `inventories/group_vars/` set region-specific SSH keys and credentials.
+- **Inventory model**: Hosts grouped by region (`east`, `west`) with sub-groups for service (`kafka_east`, `nginx_east`, `redis_east`, `rocketmq_east`, etc.). Playbooks use `hosts: all` and target specific groups via `--limit`. Group vars in `inventories/group_vars/` set region-specific SSH keys, credentials, and `hostname_prefix` (lowercase: `east`, `west`).
 - **Global defaults** in `group_vars/all.yml`: custom SSH port (300), `ansible` user with key-based auth, vault-encrypted become password. Key paths are relative (`keys/east.key`).
+- **Init bootstrap** (`playbooks/init.yml`): Connects as root on port 22, then runs roles in order: hostname → user → audit → ntp → security → sysctl → sshd. Sets `sshd_port: 300` and `security_allowed_tcp_ports: [300]` at playbook level to keep firewall and SSH port in sync. The `sshd` role runs last as the point of no return (changes port, disables password auth).
 - **Credentials**: All passwords/secrets use Ansible Vault (`!vault |` encrypted strings). Never store plaintext credentials.
-- **Existing roles**: audit, categraf, fact, kafka, nginx, ntp, promtail, redis, rocketmq, security, sshd, sysctl.
+- **Existing roles**: audit, categraf, fact, hostname, kafka, nginx, ntp, promtail, redis, rocketmq, security, sshd, sysctl, user.
 - **Salt states** use the `map.jinja` pattern for cross-platform support (Debian/RedHat).
 - **Ansible config** (`ansible.cfg`): 50 forks, SSH pipelining enabled, fact caching to JSON files, `interpreter_python = auto`, paths relative to `~/ansible/`.
 - **Gitignore strategy**: Per-directory `.gitignore` files (in `ansible/` and `saltproject/`) instead of root-level, ensuring rules work when directories are deployed standalone.

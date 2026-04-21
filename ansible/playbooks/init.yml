@@ -5,19 +5,25 @@
   vars:
     ansible_port: 22
     ansible_user: root
-    ansible_ssh_pass: your_root_pwd
+    ansible_ssh_pass: root_password
     ansible_python_interpreter: "/usr/bin/python3"
-    # ansible-vault encrypt_string 'your_new_root_pwd' --name 'root_password' --vault-id pwd.vault
-    new_root_password: !vault |
+    # ansible-vault encrypt_string 'your_new_root_pwd' --name 'user_root_password' --vault-id pwd.vault
+    user_root_password: !vault |
       $ANSIBLE_VAULT;1.1;AES256
       33636665646466656339383937316164346666323532616536316364373336393665663663313930
       3665363037663137636632373766396337636331616637380a313836666162373431303237633139
       66353936383230623332653562303137643332636638386437326461396535626637356331656139
       6533613736623532380a383636343732363331393634623231393761306264336635333739333865
       3433
+    user_ssh_public_key: "{{ lookup('file', 'keys/all.pub') }}"
+    sshd_port: 300
+    security_allowed_tcp_ports:
+      - 300
   roles:
+    - hostname
+    - user
     - audit
     - ntp
     - security
     - sysctl
-    - { role: sshd, new_root_password: "{{ new_root_password }}" }
+    - sshd

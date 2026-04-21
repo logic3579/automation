@@ -1,0 +1,11 @@
+---
+- name: Set system hostname
+  ansible.builtin.hostname:
+    name: "{{ _hostname }}"
+
+- name: Map hostname in /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^{{ ansible_default_ipv4.address | regex_escape }}\s'
+    line: "{{ ansible_default_ipv4.address }} {{ _hostname }}"
+    state: present

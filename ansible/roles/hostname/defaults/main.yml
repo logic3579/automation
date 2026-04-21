@@ -1,0 +1,4 @@
+---
+# Explicit hostname to set. When empty, auto-generates as: {hostname_prefix}-{last-two-ip-octets}
+# hostname_prefix is expected from group_vars (e.g., EAST, WEST)
+hostname_name: ""

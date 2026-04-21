@@ -1,0 +1,46 @@
+---
+- name: Ensure sudo group exists
+  ansible.builtin.group:
+    name: "{{ user_sudo_group }}"
+    state: present
+
+- name: Create operations user
+  ansible.builtin.user:
+    name: "{{ user_name }}"
+    shell: "{{ user_shell }}"
+    groups: "{{ user_sudo_group }}"
+    append: true
+    create_home: true
+    state: present
+
+- name: Set operations user password
+  ansible.builtin.user:
+    name: "{{ user_name }}"
+    password: "{{ user_password | password_hash('sha512') }}"
+  when: user_password | length > 0
+  no_log: true
+
+- name: Deploy SSH authorized key
+  ansible.posix.authorized_key:
+    user: "{{ user_name }}"
+    key: "{{ user_ssh_public_key }}"
+    state: present
+    exclusive: true
+  when: user_ssh_public_key | length > 0
+
+- name: Configure passwordless sudo
+  ansible.builtin.template:
+    src: sudoers.j2
+    dest: "/etc/sudoers.d/{{ user_name }}"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"
+  when: user_sudo_nopasswd
+
+- name: Change root password
+  ansible.builtin.user:
+    name: root
+    password: "{{ user_root_password | password_hash('sha512') }}"
+  when: user_root_password | length > 0
+  no_log: true

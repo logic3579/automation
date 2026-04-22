@@ -1,0 +1,3 @@
+# AWS-specific variables
+ntp_servers:
+  - 169.254.169.123

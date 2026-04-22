@@ -1,0 +1,20 @@
+---
+# Cloud VM initialization playbook for AWS/GCP instances.
+#
+# Unlike init.yml (self-hosted), cloud VMs already have SSH key access and a
+# pre-configured user, so the user and sshd roles are not needed. Firewall is
+# managed by cloud security groups / VPC firewall rules.
+#
+# Usage:
+#   ansible-playbook -i inventories/cloud.hosts playbooks/cloud-init.yml --limit cloud_aws
+#   ansible-playbook -i inventories/cloud.hosts playbooks/cloud-init.yml --limit cloud_gcp
+- hosts: all
+  vars:
+    hostname_mode: fqdn_short
+    security_firewall_enabled: false
+  roles:
+    - hostname
+    - audit
+    - ntp
+    - security
+    - sysctl

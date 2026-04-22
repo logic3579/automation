@@ -7,5 +7,5 @@
   ansible.builtin.lineinfile:
     path: /etc/hosts
     regexp: '^{{ ansible_default_ipv4.address | regex_escape }}\s'
-    line: "{{ ansible_default_ipv4.address }} {{ _hostname }}"
+    line: "{{ _hostname_hosts_line }}"
     state: present

@@ -1,4 +1,9 @@
 ---
-# Explicit hostname to set. When empty, auto-generates as: {hostname_prefix}-{last-two-ip-octets}
-# hostname_prefix is expected from group_vars (e.g., EAST, WEST)
+# Explicit hostname to set. When empty, auto-generated based on hostname_mode.
+# hostname_prefix is expected from group_vars (e.g., east, west)
 hostname_name: ""
+
+# Hostname generation mode:
+#   generate   - build as {hostname_prefix}-{last-two-ip-octets} (self-hosted VMs)
+#   fqdn_short - extract short name from current FQDN (cloud VMs)
+hostname_mode: generate

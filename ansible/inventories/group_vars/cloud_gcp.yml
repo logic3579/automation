@@ -1,0 +1,3 @@
+# GCP-specific variables
+ntp_servers:
+  - metadata.google.internal

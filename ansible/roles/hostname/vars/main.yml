@@ -1,4 +1,12 @@
 ---
-# Computed hostname: prefix + last two octets of default IPv4, lowercased
+# Auto-generated hostname: prefix + last two octets of default IPv4, lowercased
 _hostname_generated: "{{ ((hostname_prefix | default('SRV', true)) ~ '-' ~ ansible_default_ipv4.address.split('.')[-2:] | join('-')) | lower }}"
-_hostname: "{{ hostname_name if (hostname_name | length > 0) else _hostname_generated }}"
+
+# Short hostname extracted from FQDN (e.g., ip-10-0-1-5.ec2.internal -> ip-10-0-1-5)
+_hostname_from_fqdn: "{{ ansible_fqdn.split('.')[0] }}"
+
+# Final hostname: explicit name takes priority, then mode-based auto-generation
+_hostname: "{{ hostname_name if (hostname_name | length > 0) else (_hostname_from_fqdn if hostname_mode == 'fqdn_short' else _hostname_generated) }}"
+
+# /etc/hosts entry: append original FQDN as alias in fqdn_short mode
+_hostname_hosts_line: "{{ ansible_default_ipv4.address }} {{ _hostname }}{{ (' ' ~ ansible_fqdn) if (hostname_mode == 'fqdn_short' and ansible_fqdn != _hostname) else '' }}"

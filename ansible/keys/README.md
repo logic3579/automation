@@ -6,23 +6,27 @@ Keys are **not** tracked in version control (see `.gitignore`).
 ## Generate a key pair
 
 ```bash
-# Ed25519 (recommended)
+# Generate Ed25519 key pair
 ssh-keygen -t ed25519 -C 'ansible@east' -f ansible/keys/east.key -N ""
+# Then copy the public key to target hosts:
+ssh-copy-id -i ansible/keys/east.pub user@host
 
-# RSA 4096 (if Ed25519 is not supported)
-ssh-keygen -t rsa -b 4096 -C 'ansible@east' -f ansible/keys/east.key -N ""
+# Generate Ed25519 key pair
+ssh-keygen -t ed25519 -C 'ansible@west' -f ansible/keys/west.key -N ""
+# Then copy the public key to target hosts:
+ssh-copy-id -i ansible/keys/west.pub user@host
 ```
 
 Repeat for each region, replacing `east` with the region name (e.g. `west`).
 
 ## Expected files
 
-| File       | Purpose                      |
-|------------|------------------------------|
-| east.key   | East region private key      |
-| east.pub   | East region public key       |
-| west.key   | West region private key      |
-| west.pub   | West region public key       |
+| File     | Purpose                 |
+| -------- | ----------------------- |
+| east.key | East region private key |
+| east.pub | East region public key  |
+| west.key | West region private key |
+| west.pub | West region public key  |
 
 ## Security notes
 

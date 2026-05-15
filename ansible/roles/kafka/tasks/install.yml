@@ -4,7 +4,7 @@
     path: "{{ role_path }}/files/{{ kafka_pkg_name }}"
   delegate_to: localhost
   become: false
-  remote_user: ansible
+  remote_user: devops
   register: kafka_pkg_result
   run_once: true
 
@@ -15,7 +15,7 @@
     validate_certs: true
   delegate_to: localhost
   become: false
-  remote_user: ansible
+  remote_user: devops
   run_once: true
   when: not kafka_pkg_result.stat.exists
 

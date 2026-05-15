@@ -1,11 +1,13 @@
 ---
 # Usage:
 # standalone
-#   ansible-playbook playbooks/redis.yml --limit redis_east
+#   ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit kvm
+#   ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit cloud_aws
+#   ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit cloud_gcp
 # cluster
-#   ansible-playbook playbooks/redis.yml --limit redis_east -e "redis_cluster_enabled=yes"
+#   ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit kvm -e "redis_cluster_enabled=yes"
 
-- hosts: redis
+- hosts: all
   remote_user: root
   become: true
   become_method: su

@@ -1,6 +1,8 @@
 ---
 # Usage:
-#   ansible-playbook playbooks/kafka.yml --limit kafka_east
+#   ansible-playbook -i inventories/init.ini playbooks/kafka.yml --limit kvm
+#   ansible-playbook -i inventories/init.ini playbooks/kafka.yml --limit cloud_aws
+#   ansible-playbook -i inventories/init.ini playbooks/kafka.yml --limit cloud_gcp
 
 - hosts: all
   remote_user: root

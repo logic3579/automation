@@ -37,10 +37,3 @@
     mode: "0440"
     validate: "visudo -cf %s"
   when: user_sudo_nopasswd
-
-- name: Change root password
-  ansible.builtin.user:
-    name: root
-    password: "{{ user_root_password | password_hash('sha512') }}"
-  when: user_root_password | length > 0
-  no_log: true

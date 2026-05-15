@@ -1,6 +1,6 @@
 ---
 # Auto-generated hostname: prefix + last two octets of default IPv4, lowercased
-_hostname_generated: "{{ ((hostname_prefix | default('SRV', true)) ~ '-' ~ ansible_default_ipv4.address.split('.')[-2:] | join('-')) | lower }}"
+_hostname_generated: "{{ ((hostname_prefix | default('ecs', true)) ~ '-' ~ ansible_default_ipv4.address.split('.')[-2:] | join('-')) | lower }}"
 
 # Short hostname extracted from FQDN (e.g., ip-10-0-1-5.ec2.internal -> ip-10-0-1-5)
 _hostname_from_fqdn: "{{ ansible_fqdn.split('.')[0] }}"

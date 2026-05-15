@@ -4,15 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Infrastructure automation repository containing **Ansible** roles/playbooks and **Salt Project** states for server provisioning and configuration management. Two independent toolsets targeting Linux server fleets organized by geographic region (east/west).
+Infrastructure automation repository containing **Ansible** roles/playbooks and **Salt Project** states for server provisioning and configuration management. Two independent toolsets targeting Linux server fleets across self-hosted KVM/bare-metal and cloud (AWS/GCP) infrastructure.
 
 ## Repository Structure
 
 - `ansible/` — Ansible automation (primary tool), deployed standalone to `~/ansible/` on management machines
-  - `inventories/` — Host inventories (`hosts` for services, `init.hosts` for bootstrap) with `group_vars/` for per-group variables (all, east, west, init)
-  - `playbooks/` — Playbook entry points (`init.yml` for new server bootstrap; `kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml` for services)
+  - `inventories/` — Host inventories (`hosts.ini` for services, `init.ini` for bootstrap targets — self-hosted `kvm` group and cloud `cloud_aws`/`cloud_gcp` groups) with `group_vars/` for per-group variables (all, kvm, cloud)
+  - `playbooks/` — Playbook entry points (`kvm-init.yml` for self-hosted bootstrap, `cloud-init.yml` for cloud VM bootstrap; `kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml` for services)
   - `roles/` — Standard Ansible role layout (`tasks/`, `handlers/`, `defaults/`, `vars/`, `templates/`, `files/`)
-  - `keys/` — SSH keys for east/west regions
+  - `keys/` — Single `devops.key/devops.pub` key pair authorized for the `devops` user on all managed hosts
   - `ansible.cfg` — Config using `~/ansible/` as deployment root, `~/.ansible/tmp` for runtime temp
   - `.gitignore` — Per-directory gitignore (vault files, retry files, runtime dirs, logs, SSH keys)
 - `saltproject/` — Salt states and pillars
@@ -32,11 +32,11 @@ ansible all -m ping
 ansible-playbook playbooks/nginx.yml
 
 # Run a playbook with --limit to target specific groups
-ansible-playbook playbooks/kafka.yml --limit kafka_east
-ansible-playbook playbooks/redis.yml --limit redis_east -e "redis_cluster_enabled=yes"
+ansible-playbook -i inventories/init.ini playbooks/kafka.yml --limit kvm
+ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit cloud_aws -e "redis_cluster_enabled=yes"
 
 # Initial server bootstrap (requires vault password)
-ansible-playbook -i inventories/init.hosts playbooks/init.yml --limit init_east --vault-id pwd.vault
+ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml --limit kvm --vault-id pwd.vault
 
 # Dry run (check mode)
 ansible-playbook playbooks/nginx.yml -C
@@ -160,10 +160,11 @@ roles/<name>/
 
 ## Architecture Notes
 
-- **Inventory model**: Hosts grouped by region (`east`, `west`) with sub-groups for service (`kafka_east`, `nginx_east`, `redis_east`, `rocketmq_east`, etc.). Playbooks use `hosts: all` and target specific groups via `--limit`. Group vars in `inventories/group_vars/` set region-specific SSH keys, credentials, and `hostname_prefix` (lowercase: `east`, `west`).
-- **Global defaults** in `group_vars/all.yml`: custom SSH port (300), `ansible` user with key-based auth, vault-encrypted become password. Key paths are relative (`keys/east.key`).
-- **Init bootstrap** (`playbooks/init.yml`): Connects as root on port 22, then runs roles in order: hostname → user → audit → ntp → security → sysctl → sshd. Sets `sshd_port: 300` and `security_allowed_tcp_ports: [300]` at playbook level to keep firewall and SSH port in sync. The `sshd` role runs last as the point of no return (changes port, disables password auth).
-- **Credentials**: All passwords/secrets use Ansible Vault (`!vault |` encrypted strings). Never store plaintext credentials.
+- **Inventory model**: Hosts grouped by infrastructure type in `inventories/init.ini`: `kvm` for self-hosted, `cloud_aws`/`cloud_gcp` for cloud VMs (aggregated under `cloud`). Playbooks use `hosts: all` and target groups via `--limit kvm | cloud_aws | cloud_gcp`. `inventories/hosts.ini` (ansible.cfg default) retains region-based service groups (`kafka_east`, etc.) as a legacy alternative.
+- **Connection model**: Two-tier — `group_vars/all.yml` defines the steady-state default (`devops@2233` + `keys/devops.key`); `group_vars/kvm.yml` and `group_vars/cloud.yml` confirm/override per-group (cloud overrides port to 22). Init playbooks override connection params in their own `vars:` block to bootstrap from the pre-init account.
+- **KVM bootstrap** (`playbooks/kvm-init.yml`): Bootstrap as `root@22` with vault-encrypted password. Runs roles in order: hostname → audit → ntp → security → sysctl → user → sshd. Sets `sshd_port: 2233` and `security_allowed_tcp_ports: [2233]` at playbook level to keep firewall and SSH port in sync. The `sshd` role runs last as the point of no return (changes port, disables password auth). After init, the host is reachable as `devops@2233` via key.
+- **Cloud bootstrap** (`playbooks/cloud-init.yml`): Bootstrap as the cloud image default user (`ubuntu`) authenticated via `keys/devops.key` — requires `devops.pub` pre-injected at VM creation time. Runs hostname (in `fqdn_short` mode, preserves cloud-assigned FQDN) → audit → ntp → security (firewall disabled, cloud security groups handle it) → sysctl → user. No `sshd` role: SSH stays on 22. After init, the host is reachable as `devops@22` via key.
+- **Credentials**: All passwords/secrets use Ansible Vault (`!vault |` encrypted strings). Never store plaintext credentials. Only the KVM bootstrap path needs a password (the initial root password); everything else is key-based.
 - **Existing roles**: audit, categraf, fact, hostname, kafka, nginx, ntp, promtail, redis, rocketmq, security, sshd, sysctl, user.
 - **Salt states** use the `map.jinja` pattern for cross-platform support (Debian/RedHat).
 - **Ansible config** (`ansible.cfg`): 50 forks, SSH pipelining enabled, fact caching to JSON files, `interpreter_python = auto`, paths relative to `~/ansible/`.

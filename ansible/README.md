@@ -65,8 +65,8 @@ ssh-copy-id -i /opt/ansible/keys/ansible.key root@192.168.1.3
 
 ```bash
 # Inventories
-inventories/init.hosts    # For initializing new servers
-inventories/hosts         # Production hosts (default in ansible.cfg)
+inventories/init.ini      # For initializing new servers
+inventories/hosts.ini     # Production hosts (default in ansible.cfg)
 ```
 
 ### Ad-Hoc Commands
@@ -76,7 +76,7 @@ inventories/hosts         # Production hosts (default in ansible.cfg)
 ansible all -m ping
 
 # Ping specific hosts with a special inventory
-ansible -i inventories/init.hosts 10.0.10.12,10.0.10.13 -m ping
+ansible -i inventories/init.ini 10.0.10.12,10.0.10.13 -m ping
 ```
 
 ### Playbook Execution
@@ -86,7 +86,7 @@ ansible -i inventories/init.hosts 10.0.10.12,10.0.10.13 -m ping
 ansible-playbook playbooks/nginx.yml
 
 # Run with specific inventory and host override
-ansible-playbook -i inventories/init.hosts playbooks/init.yml -e "hosts_var=10.0.10.12,10.0.10.13"
+ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml -e "hosts_var=10.0.10.12,10.0.10.13"
 
 # Override remote user and become method
 ansible-playbook playbooks/redis.yml -u root --become --become-method su
@@ -263,7 +263,7 @@ ansible-playbook playbooks/nginx.yml --start-at-task "your task name"
 ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
 
 # Run playbook with vault password prompt
-ansible-playbook playbooks/init.yml --ask-vault-pass
+ansible-playbook playbooks/kvm-init.yml --ask-vault-pass
 ```
 
 Using vault-encrypted variables in playbooks:

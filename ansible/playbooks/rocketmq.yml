@@ -1,11 +1,13 @@
 ---
 # Usage:
 # standalone mode
-#   ansible-playbook playbooks/rocketmq.yml --limit rocketmq_east
+#   ansible-playbook -i inventories/init.ini playbooks/rocketmq.yml --limit kvm
+#   ansible-playbook -i inventories/init.ini playbooks/rocketmq.yml --limit cloud_aws
+#   ansible-playbook -i inventories/init.ini playbooks/rocketmq.yml --limit cloud_gcp
 # 2m-2s-sync mode
-#   ansible-playbook playbooks/rocketmq.yml --limit rocketmq_east
+#   ansible-playbook -i inventories/init.ini playbooks/rocketmq.yml --limit kvm
 # failover mode
-#   ansible-playbook playbooks/rocketmq.yml --limit rocketmq_east
+#   ansible-playbook -i inventories/init.ini playbooks/rocketmq.yml --limit kvm
 
 - hosts: all
   remote_user: root

@@ -1,20 +1,31 @@
 ---
 # Cloud VM initialization playbook for AWS/GCP instances.
 #
-# Unlike init.yml (self-hosted), cloud VMs already have SSH key access and a
-# pre-configured user, so the user and sshd roles are not needed. Firewall is
-# managed by cloud security groups / VPC firewall rules.
+# Bootstrap connection: the cloud image's default user (ubuntu/ec2-user) with
+# devops.pub pre-injected at VM creation time, authenticated via devops.key.
+# The user role then provisions the devops user on the VM so subsequent runs
+# can connect as devops directly (see group_vars/cloud.yml).
+#
+# Unlike kvm-init.yml, cloud VMs do not run the sshd role: SSH stays on port 22
+# and firewall is handled by cloud security groups / VPC firewall rules.
 #
 # Usage:
-#   ansible-playbook -i inventories/cloud.hosts playbooks/cloud-init.yml --limit cloud_aws
-#   ansible-playbook -i inventories/cloud.hosts playbooks/cloud-init.yml --limit cloud_gcp
+#   # AWS EC2
+#   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aws
+#   # GCP VM
+#   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_gcp
 - hosts: all
   vars:
+    ansible_user: ubuntu
+    ansible_port: 22
+    ansible_ssh_private_key_file: keys/devops.key
     hostname_mode: fqdn_short
     security_firewall_enabled: false
+    user_ssh_public_key: "{{ lookup('file', 'keys/devops.pub') }}"
   roles:
     - hostname
     - audit
     - ntp
     - security
     - sysctl
+    - user

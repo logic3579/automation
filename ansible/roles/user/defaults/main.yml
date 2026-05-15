@@ -1,6 +1,6 @@
 ---
 # Operations user name
-user_name: ansible
+user_name: devops
 
 # Operations user password (vault-encrypted recommended)
 user_password: ""
@@ -13,6 +13,3 @@ user_sudo_nopasswd: true
 
 # SSH public key content for authorized_keys
 user_ssh_public_key: ""
-
-# New root password (vault-encrypted recommended)
-user_root_password: ""

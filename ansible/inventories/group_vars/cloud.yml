@@ -1,7 +1,9 @@
-# Common variables for cloud VMs (AWS/GCP)
+# Cloud VM steady-state: connect as devops via key after cloud-init.yml has
+# run. During initialization, playbooks/cloud-init.yml overrides ansible_user
+# to the cloud image's default account (e.g. ubuntu) in its vars block.
+ansible_user: devops
 ansible_port: 22
-ansible_user: ubuntu
-ansible_ssh_private_key_file: keys/cloud.key
+ansible_ssh_private_key_file: keys/devops.key
 
 # Cloud instances typically use UTC
 ntp_timezone: "UTC"

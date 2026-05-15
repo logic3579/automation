@@ -7,26 +7,26 @@ Keys are **not** tracked in version control (see `.gitignore`).
 
 ```bash
 # Generate Ed25519 key pair
-ssh-keygen -t ed25519 -C 'ansible@east' -f ansible/keys/east.key -N ""
-# Then copy the public key to target hosts:
-ssh-copy-id -i ansible/keys/east.pub user@host
-
-# Generate Ed25519 key pair
-ssh-keygen -t ed25519 -C 'ansible@west' -f ansible/keys/west.key -N ""
-# Then copy the public key to target hosts:
-ssh-copy-id -i ansible/keys/west.pub user@host
+ssh-keygen -t ed25519 -C 'devops@ansible' -f ansible/keys/devops.key -N ""
 ```
 
-Repeat for each region, replacing `east` with the region name (e.g. `west`).
+## Distribution
+
+The `devops.pub` is the only public key authorized for the `devops` user.
+
+- **KVM / bare-metal**: `playbooks/kvm-init.yml` reads `keys/devops.pub` and
+  deploys it to `~devops/.ssh/authorized_keys` via the `user` role.
+- **Cloud (AWS/GCP)**: `devops.pub` must be pre-injected to the cloud image's
+  default user (e.g. `ubuntu`) at VM creation time, so that
+  `playbooks/cloud-init.yml` can authenticate with `devops.key` to provision
+  the `devops` user.
 
 ## Expected files
 
-| File     | Purpose                 |
-| -------- | ----------------------- |
-| east.key | East region private key |
-| east.pub | East region public key  |
-| west.key | West region private key |
-| west.pub | West region public key  |
+| File       | Purpose            |
+| ---------- | ------------------ |
+| devops.key | devops private key |
+| devops.pub | devops public key  |
 
 ## Security notes
 

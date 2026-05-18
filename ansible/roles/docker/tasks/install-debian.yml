@@ -13,7 +13,7 @@
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
 
 - name: Download Docker GPG key
   ansible.builtin.get_url:
@@ -21,7 +21,7 @@
     dest: "{{ _docker_apt_keyring }}"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
     force: false
 
 - name: Deploy Docker apt source
@@ -30,7 +30,7 @@
     dest: "{{ _docker_apt_sources }}"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
 
 - name: Install Docker packages
   ansible.builtin.apt:

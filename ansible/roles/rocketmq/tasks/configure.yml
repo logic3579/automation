@@ -17,7 +17,7 @@
     dest: /etc/systemd/system/rocketmq-namesrv.service
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
     backup: true
   notify: restart rocketmq
 
@@ -27,7 +27,7 @@
     dest: "{{ item.dest }}"
     owner: rocketmq
     group: rocketmq
-    mode: '0644'
+    mode: "0644"
     backup: true
   loop:
     - { src: broker.properties.j2, dest: "{{ broker_config }}" }
@@ -41,7 +41,7 @@
     dest: "{{ item.dest }}"
     owner: rocketmq
     group: rocketmq
-    mode: '0644'
+    mode: "0644"
     backup: true
   loop:
     - { src: master.properties.j2, dest: "{{ master_config }}" }
@@ -57,7 +57,7 @@
     dest: "{{ item.dest }}"
     owner: rocketmq
     group: rocketmq
-    mode: '0644'
+    mode: "0644"
     backup: true
   loop:
     - { src: broker.properties.j2, dest: "{{ broker_config }}" }

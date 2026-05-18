@@ -28,13 +28,13 @@
   ansible.builtin.copy:
     src: "{{ rocketmq_pkg_name }}"
     dest: "/tmp/{{ rocketmq_pkg_name }}"
-    mode: '0644'
+    mode: "0644"
 
 - name: Extract rocketmq package
   ansible.builtin.unarchive:
     src: "/tmp/{{ rocketmq_pkg_name }}"
     dest: /opt
-    mode: '0755'
+    mode: "0755"
     remote_src: true
 
 - name: Create rocketmq symlink

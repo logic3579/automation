@@ -10,7 +10,7 @@
     dest: "{{ _sing_box_yum_repo_file }}"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
 
 - name: Install sing-box package
   ansible.builtin.dnf:

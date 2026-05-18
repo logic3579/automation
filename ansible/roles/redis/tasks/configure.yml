@@ -22,7 +22,7 @@
     state: directory
     owner: redis
     group: redis
-    mode: '0755'
+    mode: "0755"
   loop: "{{ redis_ports }}"
   loop_control:
     loop_var: redis_port
@@ -33,7 +33,7 @@
     dest: "{{ redis_config }}"
     owner: redis
     group: redis
-    mode: '0644'
+    mode: "0644"
     backup: true
   loop: "{{ redis_ports }}"
   loop_control:
@@ -46,7 +46,7 @@
     dest: "/etc/systemd/system/redis-{{ redis_port }}.service"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
     backup: true
   loop: "{{ redis_ports }}"
   loop_control:

@@ -5,7 +5,7 @@
     dest: /etc/systemd/system/docker-cleanup.service
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: restart docker-cleanup timer
 
 - name: Deploy docker-cleanup timer unit
@@ -14,7 +14,7 @@
     dest: /etc/systemd/system/docker-cleanup.timer
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: restart docker-cleanup timer
 
 - name: Enable and start docker-cleanup timer

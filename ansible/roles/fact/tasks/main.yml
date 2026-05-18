@@ -7,7 +7,7 @@
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
 
 - name: Deploy custom fact file
   ansible.builtin.template:
@@ -15,7 +15,7 @@
     dest: "{{ fact_dir }}/{{ fact_filename }}"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
 
 - name: Reload ansible facts
   ansible.builtin.setup:

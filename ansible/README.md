@@ -153,7 +153,7 @@ ansible-playbook playbooks/nginx.yml --start-at-task "your task name"
   ansible.builtin.template:
     src: templates/test.j2
     dest: /tmp/hostname
-    mode: '0644'
+    mode: "0644"
 ```
 
 #### Facts and Variables
@@ -218,18 +218,18 @@ ansible-playbook playbooks/nginx.yml --start-at-task "your task name"
   tasks:
     - block:
         - ansible.builtin.debug:
-            msg: 'I execute normally'
+            msg: "I execute normally"
         - name: Force a failure
           ansible.builtin.command: /bin/false
         - ansible.builtin.debug:
-            msg: 'I never execute, due to the above task failing'
+            msg: "I never execute, due to the above task failing"
       rescue:
         - ansible.builtin.debug:
-            msg: 'I caught an error'
+            msg: "I caught an error"
         - name: Force a failure in middle of recovery
           ansible.builtin.command: /bin/false
         - ansible.builtin.debug:
-            msg: 'I also never execute'
+            msg: "I also never execute"
       always:
         - ansible.builtin.debug:
             msg: "This always executes"

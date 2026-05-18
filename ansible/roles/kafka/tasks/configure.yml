@@ -25,7 +25,7 @@
     dest: "{{ item.dest }}"
     owner: kafka
     group: kafka
-    mode: '0644'
+    mode: "0644"
     backup: true
   loop:
     - { src: server.properties.j2, dest: "{{ kafka_config }}" }

@@ -115,7 +115,7 @@ roles/<name>/
 
 - **FQCN required** for all modules: `ansible.builtin.file`, `ansible.builtin.template`, `ansible.builtin.package`, `ansible.builtin.systemd`, `ansible.posix.sysctl`, `community.general.pam_limits`, etc.
 - **YAML dict style only** — never inline `key=value` syntax.
-- **Mode values** always quoted strings: `'0644'`, `'0755'`, `'0600'`.
+- **Quote style**: follow ansible-lint's suggested `yaml.quoted-strings` config (`quote-type: double`, `required: only-when-needed`). Mode values **must** be quoted with double quotes — `"0644"`, `"0755"`, `"0600"` — to prevent YAML loaders from parsing octals as integers. Jinja2 expressions also use double quotes: `"{{ var }}"`. Single quotes only when escape semantics must be avoided.
 
 ### Variables
 

@@ -5,7 +5,7 @@
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
 
 - name: Ensure xray log directory exists
   ansible.builtin.file:
@@ -13,7 +13,7 @@
     state: directory
     owner: nobody
     group: nogroup
-    mode: '0755'
+    mode: "0755"
   when: ansible_os_family == "Debian"
 
 - name: Ensure xray log directory exists
@@ -22,7 +22,7 @@
     state: directory
     owner: nobody
     group: nobody
-    mode: '0755'
+    mode: "0755"
   when: ansible_os_family == "RedHat"
 
 - name: Deploy xray configuration
@@ -31,7 +31,7 @@
     dest: "{{ xray_config_file }}"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
     backup: true
   notify: restart xray
 

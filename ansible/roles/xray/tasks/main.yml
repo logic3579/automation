@@ -1,0 +1,12 @@
+---
+- name: Check if xray is installed
+  ansible.builtin.stat:
+    path: "{{ xray_binary }}"
+  register: xray_installed
+
+- name: Install xray
+  ansible.builtin.include_tasks: install.yml
+  when: not xray_installed.stat.exists
+
+- name: Configure xray
+  ansible.builtin.include_tasks: configure.yml

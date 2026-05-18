@@ -1,0 +1,14 @@
+# Third-party VPS steady-state: connect as devops via key after vps-init.yml has
+# run. During initialization, playbooks/vps-init.yml overrides these with
+# root@22 + a vault-encrypted shared password.
+ansible_user: devops
+ansible_port: 22
+ansible_ssh_private_key_file: keys/devops.key
+
+# VPS-tuned defaults
+ntp_timezone: "UTC"
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org

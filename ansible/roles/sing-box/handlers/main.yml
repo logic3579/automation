@@ -1,0 +1,16 @@
+---
+- name: restart sing-box
+  ansible.builtin.systemd:
+    name: sing-box
+    daemon_reload: true
+    state: restarted
+    enabled: true
+
+- name: Verify sing-box is listening
+  ansible.builtin.wait_for:
+    host: "{{ ansible_default_ipv4['address'] }}"
+    port: "{{ sing_box_port }}"
+    delay: 5
+    timeout: 30
+    state: started
+  listen: restart sing-box

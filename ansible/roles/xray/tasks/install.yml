@@ -1,0 +1,14 @@
+---
+- name: Install curl
+  ansible.builtin.package:
+    name: curl
+    state: present
+    update_cache: true
+
+- name: Run official Xray install script
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -fsSL "{{ xray_install_script_url }}" | bash -s -- install
+  args:
+    executable: /bin/bash
+    creates: "{{ xray_binary }}"

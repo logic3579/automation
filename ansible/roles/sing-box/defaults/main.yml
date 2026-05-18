@@ -1,0 +1,26 @@
+---
+# Protocol template selector:
+#   vmess         - VMess over plain TCP (default; terminate TLS upstream)
+#   vless-reality - VLESS + REALITY (TLS fingerprint masquerade)
+sing_box_protocol: vmess
+
+# Inbound listen port (firewall pre-opens 443 in vps-init.yml)
+sing_box_port: 443
+
+# Client UUID — vault-encrypt before use:
+#   ansible-vault encrypt_string 'your_uuid' --name 'sing_box_uuid' --vault-id pwd.vault
+sing_box_uuid: !vault |
+  $ANSIBLE_VAULT;1.1;AES256
+  REPLACE_WITH_VAULT_ENCRYPTED_VALUE
+
+# ----- VLESS + REALITY -----
+# Generate keypair: /usr/bin/sing-box generate reality-keypair
+# Generate short IDs: openssl rand -hex 8
+sing_box_reality_server_name: "www.cloudflare.com"
+sing_box_reality_handshake_server: "www.cloudflare.com"
+sing_box_reality_handshake_port: 443
+sing_box_reality_private_key: !vault |
+  $ANSIBLE_VAULT;1.1;AES256
+  REPLACE_WITH_VAULT_ENCRYPTED_VALUE
+sing_box_reality_short_ids:
+  - ""

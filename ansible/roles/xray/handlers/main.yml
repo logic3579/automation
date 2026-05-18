@@ -1,0 +1,16 @@
+---
+- name: restart xray
+  ansible.builtin.systemd:
+    name: xray
+    daemon_reload: true
+    state: restarted
+    enabled: true
+
+- name: Verify xray is listening
+  ansible.builtin.wait_for:
+    host: "{{ ansible_default_ipv4['address'] }}"
+    port: "{{ xray_port }}"
+    delay: 5
+    timeout: 30
+    state: started
+  listen: restart xray

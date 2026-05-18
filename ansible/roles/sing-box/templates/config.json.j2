@@ -1,0 +1,47 @@
+{
+  "log": {
+    "level": "warn",
+    "output": "{{ sing_box_log_dir }}/sing-box.log",
+    "timestamp": true
+  },
+  "inbounds": [
+{% if sing_box_protocol == "vless-reality" %}
+    {
+      "type": "vless",
+      "tag": "vless-in",
+      "listen": "::",
+      "listen_port": {{ sing_box_port }},
+      "users": [
+        {"name": "default", "uuid": "{{ sing_box_uuid }}", "flow": "xtls-rprx-vision"}
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": "{{ sing_box_reality_server_name }}",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "{{ sing_box_reality_handshake_server }}",
+            "server_port": {{ sing_box_reality_handshake_port }}
+          },
+          "private_key": "{{ sing_box_reality_private_key }}",
+          "short_id": {{ sing_box_reality_short_ids | to_json }}
+        }
+      }
+    }
+{% else %}
+    {
+      "type": "vmess",
+      "tag": "vmess-in",
+      "listen": "::",
+      "listen_port": {{ sing_box_port }},
+      "users": [
+        {"name": "default", "uuid": "{{ sing_box_uuid }}"}
+      ]
+    }
+{% endif %}
+  ],
+  "outbounds": [
+    {"type": "direct", "tag": "direct"},
+    {"type": "block", "tag": "block"}
+  ]
+}

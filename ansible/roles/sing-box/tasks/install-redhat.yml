@@ -1,0 +1,19 @@
+---
+- name: Install dnf plugins core
+  ansible.builtin.dnf:
+    name: dnf-plugins-core
+    state: present
+
+- name: Add sing-box yum repository
+  ansible.builtin.get_url:
+    url: "{{ _sing_box_yum_repo_url }}"
+    dest: "{{ _sing_box_yum_repo_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install sing-box package
+  ansible.builtin.dnf:
+    name: sing-box
+    state: present
+    update_cache: true

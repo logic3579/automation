@@ -1,0 +1,29 @@
+---
+# Protocol template selector:
+#   vmess         - VMess over plain TCP (default; terminate TLS upstream)
+#   vless-reality - VLESS + REALITY (TLS fingerprint masquerade)
+xray_protocol: vmess
+
+# Inbound listen port (firewall pre-opens 443 in vps-init.yml)
+xray_port: 443
+
+# Client UUID — vault-encrypt before use:
+#   ansible-vault encrypt_string 'your_uuid' --name 'xray_uuid' --vault-id pwd.vault
+xray_uuid: !vault |
+  $ANSIBLE_VAULT;1.1;AES256
+  REPLACE_WITH_VAULT_ENCRYPTED_VALUE
+
+# ----- VMess transport -----
+# (Plain TCP by default; override if you proxy through nginx/CDN)
+
+# ----- VLESS + REALITY -----
+# Generate keypair: /usr/local/bin/xray x25519
+# Generate short IDs: openssl rand -hex 8
+xray_reality_dest: "www.cloudflare.com:443"
+xray_reality_server_names:
+  - www.cloudflare.com
+xray_reality_private_key: !vault |
+  $ANSIBLE_VAULT;1.1;AES256
+  REPLACE_WITH_VAULT_ENCRYPTED_VALUE
+xray_reality_short_ids:
+  - ""

@@ -1,0 +1,3 @@
+---
+_sing_box_yum_repo_url: https://sing-box.app/sing-box.repo
+_sing_box_yum_repo_file: /etc/yum.repos.d/sing-box.repo

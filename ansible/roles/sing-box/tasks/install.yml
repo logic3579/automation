@@ -1,0 +1,8 @@
+---
+- name: Install sing-box on Debian family
+  ansible.builtin.include_tasks: install-debian.yml
+  when: ansible_os_family == "Debian"
+
+- name: Install sing-box on RedHat family
+  ansible.builtin.include_tasks: install-redhat.yml
+  when: ansible_os_family == "RedHat"

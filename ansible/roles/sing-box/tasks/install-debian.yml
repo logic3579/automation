@@ -1,0 +1,39 @@
+---
+- name: Install apt prerequisites
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+    state: present
+    update_cache: true
+
+- name: Ensure apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Download Sagernet GPG key
+  ansible.builtin.get_url:
+    url: "{{ _sing_box_apt_gpg_url }}"
+    dest: "{{ _sing_box_apt_keyring }}"
+    owner: root
+    group: root
+    mode: '0644'
+    force: false
+
+- name: Deploy Sagernet apt source
+  ansible.builtin.template:
+    src: sagernet.sources.j2
+    dest: "{{ _sing_box_apt_sources }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install sing-box package
+  ansible.builtin.apt:
+    name: sing-box
+    state: present
+    update_cache: true

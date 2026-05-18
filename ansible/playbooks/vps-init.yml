@@ -1,0 +1,35 @@
+---
+# Third-party VPS initialization playbook.
+#
+# Bootstrap connection: root@22 with a shared password (vault-encrypted). Most
+# VPS providers ship with root + a random password — set a unified password
+# at provisioning time (provider console / cloud-init user-data), then vault
+# the shared value here:
+#   ansible-vault encrypt_string 'your_root_password' --name 'ansible_ssh_pass' --vault-id pwd.vault
+#
+# Post-init steady state: devops@22 + keys/devops.key (see group_vars/cloud_vps.yml).
+# SSH stays on port 22 (no port shift) and the firewall allows 22 + 443.
+#
+# Usage:
+#   ansible-playbook -i inventories/init.ini playbooks/vps-init.yml --limit cloud_vps --vault-id pwd.vault
+- hosts: all
+  vars:
+    ansible_user: root
+    ansible_port: 22
+    ansible_ssh_pass: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      REPLACE_WITH_VAULT_ENCRYPTED_VALUE
+    user_ssh_public_key: "{{ lookup('file', 'keys/devops.pub') }}"
+    hostname_mode: fqdn_short
+    sshd_port: 22
+    security_allowed_tcp_ports:
+      - 22
+      - 443
+  roles:
+    - hostname
+    - audit
+    - ntp
+    - security
+    - sysctl
+    - user
+    - sshd

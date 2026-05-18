@@ -1,0 +1,8 @@
+---
+# Internal/computed variables - do not override
+
+xray_install_script_url: https://github.com/XTLS/Xray-install/raw/main/install-release.sh
+xray_binary: /usr/local/bin/xray
+xray_config_dir: /usr/local/etc/xray
+xray_config_file: "{{ xray_config_dir }}/config.json"
+xray_log_dir: /var/log/xray

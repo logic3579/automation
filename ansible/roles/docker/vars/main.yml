@@ -1,0 +1,17 @@
+---
+# Internal/computed variables - do not override
+
+# Docker-ce package set, identical across all supported distributions
+_docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+# Translate kernel arch (ansible_architecture) to Debian dpkg arch
+_docker_dpkg_arch_map:
+  x86_64: amd64
+  aarch64: arm64
+  armv7l: armhf
+_docker_dpkg_arch: "{{ _docker_dpkg_arch_map[ansible_architecture] | default(ansible_architecture) }}"

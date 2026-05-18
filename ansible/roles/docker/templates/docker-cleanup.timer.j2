@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Run Docker cleanup {{ docker_cleanup_schedule }}
+
+[Timer]
+OnCalendar={{ docker_cleanup_schedule }}
+RandomizedDelaySec={{ docker_cleanup_random_delay }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target

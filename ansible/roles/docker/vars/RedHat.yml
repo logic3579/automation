@@ -1,0 +1,4 @@
+---
+# RedHat-family (CentOS Stream, RHEL, Rocky, AlmaLinux) install paths
+_docker_yum_repo_url: https://download.docker.com/linux/centos/docker-ce.repo
+_docker_yum_repo_file: /etc/yum.repos.d/docker-ce.repo

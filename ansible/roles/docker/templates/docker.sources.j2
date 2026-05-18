@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+Types: deb
+URIs: {{ _docker_apt_url }}
+Suites: {{ ansible_distribution_release }}
+Components: stable
+Architectures: {{ _docker_dpkg_arch }}
+Signed-By: {{ _docker_apt_keyring }}

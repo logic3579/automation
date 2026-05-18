@@ -1,0 +1,19 @@
+---
+- name: Install dnf plugins core
+  ansible.builtin.dnf:
+    name: dnf-plugins-core
+    state: present
+
+- name: Add Docker yum repository
+  ansible.builtin.get_url:
+    url: "{{ _docker_yum_repo_url }}"
+    dest: "{{ _docker_yum_repo_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install Docker packages
+  ansible.builtin.dnf:
+    name: "{{ _docker_packages }}"
+    state: present
+    update_cache: true

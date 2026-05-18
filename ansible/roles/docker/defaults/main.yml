@@ -1,0 +1,17 @@
+---
+# User-configurable variables
+
+# Users to add to the docker group (passwordless docker access)
+docker_users: []
+
+# daemon.json settings
+docker_data_root: /var/lib/docker
+docker_log_driver: json-file
+docker_log_max_size: "100m"
+docker_log_max_file: "3"
+docker_storage_driver: overlay2
+
+# Image cleanup via systemd timer
+docker_cleanup_image_age: "168h"     # prune images older than 7 days
+docker_cleanup_schedule: "weekly"     # systemd OnCalendar expression
+docker_cleanup_random_delay: 3600     # jitter in seconds

@@ -1,0 +1,33 @@
+---
+- name: Ensure docker config directory exists
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy daemon.json
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  notify: restart docker
+
+- name: Enable and start docker
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Add users to docker group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  loop: "{{ docker_users }}"
+  when: docker_users | length > 0

@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Docker cleanup unused images
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker image prune -a -f --filter "until={{ docker_cleanup_image_age }}"

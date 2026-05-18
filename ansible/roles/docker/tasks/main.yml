@@ -1,0 +1,12 @@
+---
+- name: Load OS-specific variables
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Install Docker Engine
+  ansible.builtin.include_tasks: install.yml
+
+- name: Configure Docker
+  ansible.builtin.include_tasks: configure.yml
+
+- name: Configure image cleanup timer
+  ansible.builtin.include_tasks: cleanup.yml

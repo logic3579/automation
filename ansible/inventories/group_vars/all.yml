@@ -2,3 +2,7 @@
 ansible_user: devops
 ansible_port: 2233
 ansible_ssh_private_key_file: keys/devops.key
+
+# Template marker (replaces the deprecated ansible.cfg DEFAULT_MANAGED_STR).
+# Uses Ansible's built-in template magic vars (no fact gathering required).
+ansible_managed: "Ansible managed: {{ template_path | basename }} modified by {{ template_uid }} on {{ template_host }}"

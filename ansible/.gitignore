@@ -12,6 +12,6 @@ plugins/
 # Log files
 ansible.log
 
-# SSH keys (private and public)
-keys/*.key
-keys/*.pub
+# SSH keys — ignore everything in keys/ except README.md
+keys/*
+!keys/README.md

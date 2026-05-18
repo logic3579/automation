@@ -1,0 +1,24 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Rocketmq broker
+Documentation=https://rocketmq.apache.org/docs/
+Wants=network-online.target
+After=network-online.target rocketmq-namesrv.service
+
+[Service]
+ExecStart=/opt/rocketmq/bin/mqbroker -c {{ broker_config }}
+LimitNOFILE=655350
+LimitNPROC=65535
+NoNewPrivileges=yes
+Restart=on-failure
+RestartSec=10s
+Type=simple
+TimeoutStartSec=60
+TimeoutStopSec=30
+UMask=0077
+User=rocketmq
+Group=rocketmq
+WorkingDirectory=/opt/rocketmq
+
+[Install]
+WantedBy=multi-user.target

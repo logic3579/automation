@@ -4,8 +4,9 @@
 
 # Installation settings
 nginx_root_path: /opt/nginx
-nginx_version: "1.20.1"
+nginx_version: "1.30.1"
 nginx_pkg_name: "nginx-{{ nginx_version }}.tar.gz"
+nginx_pkg_url: "https://nginx.org/download/{{ nginx_pkg_name }}"
 
 # Service settings
 nginx_port: 80

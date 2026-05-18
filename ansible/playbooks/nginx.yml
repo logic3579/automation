@@ -1,8 +1,6 @@
 ---
 # Usage:
-#   ansible-playbook -i inventories/init.ini playbooks/nginx.yml --limit kvm
-#   ansible-playbook -i inventories/init.ini playbooks/nginx.yml --limit cloud_aws
-#   ansible-playbook -i inventories/init.ini playbooks/nginx.yml --limit cloud_gcp
+#   ansible-playbook -i inventories/init.ini playbooks/nginx.yml --limit nginx_standalone_kvm
 
 - hosts: all
   remote_user: root

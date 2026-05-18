@@ -1,4 +1,22 @@
 ---
+- name: Check local nginx package
+  ansible.builtin.stat:
+    path: "{{ role_path }}/files/{{ nginx_pkg_name }}"
+  delegate_to: localhost
+  become: false
+  register: nginx_pkg_result
+  run_once: true
+
+- name: Download nginx package
+  ansible.builtin.get_url:
+    url: "{{ nginx_pkg_url }}"
+    dest: "{{ role_path }}/files/{{ nginx_pkg_name }}"
+    validate_certs: true
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when: not nginx_pkg_result.stat.exists
+
 - name: Install dependency packages
   ansible.builtin.package:
     name: "{{ item }}"

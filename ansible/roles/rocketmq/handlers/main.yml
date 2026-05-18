@@ -1,24 +1,22 @@
 ---
 - name: restart rocketmq
   ansible.builtin.systemd:
-    name: "{{ item }}"
+    name: "{{ item.name }}"
     daemon_reload: true
     state: restarted
     enabled: true
-  loop:
-    - rocketmq-namesrv
-    - rocketmq-master
-    - rocketmq-slave
+  loop: "{{ rocketmq_services }}"
+  loop_control:
+    label: "{{ item.name }}"
 
 - name: Verify rocketmq is listening
   ansible.builtin.wait_for:
     host: "{{ host_ip }}"
-    port: "{{ item }}"
+    port: "{{ item.port }}"
     delay: 15
     timeout: 60
     state: started
-  loop:
-    - "{{ namesrv_port }}"
-    - "{{ master_port }}"
-    - "{{ slave_port }}"
+  loop: "{{ rocketmq_services }}"
+  loop_control:
+    label: "{{ item.name }}:{{ item.port }}"
   listen: restart rocketmq

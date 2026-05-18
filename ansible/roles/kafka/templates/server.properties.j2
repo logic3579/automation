@@ -15,11 +15,19 @@ socket.request.max.bytes=104857600
 log.dirs=/opt/kafka/logs
 num.partitions=3
 num.recovery.threads.per.data.dir=1
+{% if kafka_cluster_enabled == "yes" %}
 offsets.topic.replication.factor=3
 transaction.state.log.replication.factor=3
 transaction.state.log.min.isr=2
 default.replication.factor=3
 min.insync.replicas=2
+{% else %}
+offsets.topic.replication.factor=1
+transaction.state.log.replication.factor=1
+transaction.state.log.min.isr=1
+default.replication.factor=1
+min.insync.replicas=1
+{% endif %}
 queued.max.requests=3000
 log.retention.hours=168
 log.segment.bytes=1073741824

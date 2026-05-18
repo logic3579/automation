@@ -1,11 +1,9 @@
 ---
 # Usage:
-# standalone
-#   ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit kvm
-#   ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit cloud_aws
-#   ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit cloud_gcp
-# cluster
-#   ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit kvm -e "redis_cluster_enabled=yes"
+# standalone (single instance, port 6379)
+#   ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit redis_standalone_kvm
+# 3M3S cluster (3 hosts x 2 instances each on ports 7001-7006, cluster-replicas 1)
+#   ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit redis_cluster_kvm -e "redis_cluster_enabled=yes"
 
 - hosts: all
   remote_user: root

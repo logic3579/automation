@@ -55,11 +55,12 @@ ansible-playbook playbooks/nginx.yml -C
 # Vault operations
 ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
 
-# Lint (local dev: ansible.cfg's inventory points at ~/ansible/... so override here,
-# and point ansible-lint's venv at the collections shipped with the homebrew ansible)
-ANSIBLE_INVENTORY=inventories/hosts.ini \
-ANSIBLE_COLLECTIONS_PATH=/opt/homebrew/Cellar/ansible/13.6.0_1/libexec/lib/python3.14/site-packages \
-ansible-lint --offline playbooks/ roles/
+# Lint (must run from the ansible/ directory so the relative paths in ansible.cfg resolve)
+cd ansible/ && ansible-lint --offline playbooks/ roles/
+
+# One-time bootstrap on a new machine: install required collections to the user-standard
+# location so ansible-lint's own venv (and any other tool) can find them automatically
+ansible-galaxy collection install -r requirements.yml
 ```
 
 ### Salt

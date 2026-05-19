@@ -10,7 +10,6 @@
   remote_user: root
   become: true
   become_method: ansible.builtin.su
-  gather_facts: false
   serial: 1
   roles:
     - redis

@@ -1,9 +1,9 @@
 ---
 # Usage:
 # install docker engine on all kvm hosts (weekly cleanup is always deployed)
-#   ansible-playbook -i inventories/init.ini playbooks/docker.yml --limit kvm
+#   ansible-playbook playbooks/docker.yml --limit kvm
 # install with a custom cleanup policy (daily, prune images older than 72h)
-#   ansible-playbook -i inventories/init.ini playbooks/docker.yml --limit kvm \
+#   ansible-playbook playbooks/docker.yml --limit kvm \
 #     -e "docker_cleanup_schedule=daily docker_cleanup_image_age=72h"
 
 - name: Deploy Docker

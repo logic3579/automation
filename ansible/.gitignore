@@ -9,9 +9,6 @@ tmp/
 cache/
 plugins/
 
-# Log files
-ansible.log
-
 # SSH keys — ignore everything in keys/ except README.md
 keys/*
 !keys/README.md

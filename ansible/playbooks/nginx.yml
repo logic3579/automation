@@ -1,6 +1,6 @@
 ---
 # Usage:
-#   ansible-playbook -i inventories/init.ini playbooks/nginx.yml --limit nginx_standalone_kvm
+#   ansible-playbook playbooks/nginx.yml --limit nginx_standalone_kvm
 
 - name: Deploy Nginx
   hosts: all

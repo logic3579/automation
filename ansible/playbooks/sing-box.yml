@@ -1,9 +1,9 @@
 ---
 # Usage:
 # default = VMess on port 443 (UUID + REALITY keys come from defaults/main.yml, vault-encrypted)
-#   ansible-playbook -i inventories/init.ini playbooks/sing-box.yml --limit cloud_vps --vault-id pwd.vault
+#   ansible-playbook playbooks/sing-box.yml --limit cloud_vps --vault-id pwd.vault
 # Switch to VLESS+REALITY (must populate sing_box_reality_private_key in vault):
-#   ansible-playbook -i inventories/init.ini playbooks/sing-box.yml --limit cloud_vps \
+#   ansible-playbook playbooks/sing-box.yml --limit cloud_vps \
 #     --vault-id pwd.vault -e "sing_box_protocol=vless-reality"
 
 - name: Deploy sing-box

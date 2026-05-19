@@ -9,7 +9,10 @@ Infrastructure automation repository containing **Ansible** roles/playbooks and 
 ## Repository Structure
 
 - `ansible/` — Ansible automation (primary tool), deployed standalone to `~/ansible/` on management machines
-  - `inventories/` — Host inventories with two files: `init.ini` for bootstrap targets (self-hosted `kvm`, cloud `cloud_aws`/`cloud_gcp`/`cloud_vps`, all aggregated under `cloud`) and `hosts.ini` for service deployment (per-component `*_standalone_kvm` / `*_cluster_kvm` groups: nginx, kafka, redis, rocketmq, with rocketmq additionally split into `_2m2s_kvm` and `_failover_kvm`). `group_vars/` holds per-group variables (`all`, `kvm`, `cloud`, `cloud_aws`, `cloud_gcp`, `cloud_vps`).
+  - `inventories/` — Two inventory files, used at different lifecycle stages.
+    - **`init.ini`** (bootstrap) targets broad IP ranges by infra type: `kvm` self-hosted, `cloud_aws` / `cloud_gcp` / `cloud_vps` cloud, all rolled up under `cloud:children`. Used by `kvm-init.yml` / `cloud-init.yml` / `vps-init.yml`.
+    - **`hosts.ini`** (service deploy, default in `ansible.cfg`) lists only the specific hosts each service runs on. Each leaf group is named `<service>_<topology>_<infra>` (e.g. `kafka_cluster_kvm`, `rocketmq_2m2s_kvm`, `rocketmq_failover_kvm`); roll-ups `kvm:children` and `cloud:children` (currently containing `cloud_vps` for xray / sing-box hosts) let you target an entire infra type. Service playbooks default to this inventory — no `-i` flag needed.
+    - `group_vars/` holds per-group variables shared by both inventories: `all`, `kvm`, `cloud`, `cloud_aws`, `cloud_gcp`, `cloud_vps`.
   - `playbooks/` — Bootstrap (`kvm-init.yml`, `cloud-init.yml`, `vps-init.yml`) and service (`kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml`, `docker.yml`, `xray.yml`, `sing-box.yml`) entry points.
   - `roles/` — Standard Ansible role layout (`tasks/`, `handlers/`, `defaults/`, `vars/`, `templates/`, `files/`)
   - `keys/` — Single `devops.key/devops.pub` key pair authorized for the `devops` user on all managed hosts
@@ -31,23 +34,21 @@ ansible all -m ping
 # Run a playbook (default inventory, all hosts)
 ansible-playbook playbooks/nginx.yml
 
-# Run a service playbook with --limit to target specific groups
-ansible-playbook -i inventories/init.ini playbooks/kafka.yml --limit kafka_standalone_kvm
-ansible-playbook -i inventories/init.ini playbooks/kafka.yml --limit kafka_cluster_kvm -e "kafka_cluster_enabled=yes"
-ansible-playbook -i inventories/init.ini playbooks/redis.yml --limit redis_cluster_kvm -e "redis_cluster_enabled=yes"
-ansible-playbook -i inventories/init.ini playbooks/rocketmq.yml --limit rocketmq_failover_kvm -e "rocketmq_mode=failover"
+# Service deployment uses the default hosts.ini (no -i needed)
+ansible-playbook playbooks/kafka.yml --limit kafka_standalone_kvm
+ansible-playbook playbooks/kafka.yml --limit kafka_cluster_kvm -e "kafka_cluster_enabled=yes"
+ansible-playbook playbooks/redis.yml --limit redis_cluster_kvm -e "redis_cluster_enabled=yes"
+ansible-playbook playbooks/rocketmq.yml --limit rocketmq_failover_kvm -e "rocketmq_mode=failover"
+ansible-playbook playbooks/docker.yml --limit kvm
 
-# Initial server bootstrap (vault password file holds the shared root password)
+# Reverse-proxy / VPS-app deployment (after vps-init.yml) — target hosts.ini's cloud_vps
+ansible-playbook playbooks/xray.yml --limit cloud_vps --vault-id pwd.vault
+ansible-playbook playbooks/sing-box.yml --limit cloud_vps --vault-id pwd.vault -e "sing_box_protocol=vless-reality"
+
+# Bootstrap (uses init.ini's broad IP ranges; vault password file holds the shared root password)
 ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml --limit kvm --vault-id pwd.vault
 ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aws
 ansible-playbook -i inventories/init.ini playbooks/vps-init.yml --limit cloud_vps --vault-id pwd.vault
-
-# Reverse-proxy / VPS-app deployment (after vps-init.yml)
-ansible-playbook -i inventories/init.ini playbooks/xray.yml --limit cloud_vps --vault-id pwd.vault
-ansible-playbook -i inventories/init.ini playbooks/sing-box.yml --limit cloud_vps --vault-id pwd.vault -e "sing_box_protocol=vless-reality"
-
-# Docker engine + image-cleanup timer (mandatory)
-ansible-playbook -i inventories/init.ini playbooks/docker.yml --limit kvm
 
 # Dry run (check mode)
 ansible-playbook playbooks/nginx.yml -C
@@ -175,7 +176,9 @@ roles/<name>/
 
 ## Architecture Notes
 
-- **Inventory model**: Two files. `inventories/init.ini` groups hosts by infrastructure type — `kvm` for self-hosted, `cloud_aws`/`cloud_gcp`/`cloud_vps` for cloud/VPS VMs (all aggregated under `cloud:children`). `inventories/hosts.ini` (ansible.cfg default) is split per-component **and** per-topology: `<service>_standalone_kvm` vs `<service>_cluster_kvm` for kafka/redis, with rocketmq additionally split into `rocketmq_2m2s_kvm` (2m-2s-sync) and `rocketmq_failover_kvm` (DLedger ≥3 hosts). Each playbook example matches one of these groups via `--limit`.
+- **Inventory model**: Two files for two lifecycle stages.
+  - `inventories/init.ini` (bootstrap) groups hosts by infrastructure type — `kvm` self-hosted, `cloud_aws`/`cloud_gcp`/`cloud_vps` cloud, all aggregated under `cloud:children`. Only the three `*-init.yml` playbooks reference it (`-i inventories/init.ini`).
+  - `inventories/hosts.ini` (service deploy, default in `ansible.cfg`) lists specific hosts per service. Leaf groups follow `<service>_<topology>_<infra>` (`kafka_cluster_kvm`, `rocketmq_2m2s_kvm`, `rocketmq_failover_kvm`, etc.). Roll-up parent groups via `:children` — `[kvm:children]` covers every KVM service host, `[cloud:children]` currently includes `cloud_vps` (xray / sing-box deployment targets). Service playbooks omit `-i` entirely.
 - **Connection model**: Two-tier — `group_vars/all.yml` defines the steady-state default (`devops@2233` + `keys/devops.key`); per-group overrides set the right port (`kvm.yml`: 2233; `cloud.yml`/`cloud_vps.yml`: 22) and provider-specific NTP servers. Init playbooks override connection params in their own `vars:` block to bootstrap from the pre-init account.
 - **KVM bootstrap** (`playbooks/kvm-init.yml`): Bootstrap as `root@22` with vault-encrypted password. Runs roles in order: hostname → audit → ntp → security → sysctl → user → sshd. Sets `sshd_port: 2233` and `security_allowed_tcp_ports: [2233]` at playbook level to keep firewall and SSH port in sync. The `sshd` role runs last as the point of no return (changes port, disables password auth). After init, the host is reachable as `devops@2233` via key.
 - **Cloud bootstrap** (`playbooks/cloud-init.yml`): Bootstrap as the cloud image default user (`ubuntu`) authenticated via `keys/devops.key` — requires `devops.pub` pre-injected at VM creation time. Runs hostname (in `fqdn_short` mode, preserves cloud-assigned FQDN) → audit → ntp → security (firewall disabled, cloud security groups handle it) → sysctl → user. No `sshd` role: SSH stays on 22. After init, the host is reachable as `devops@22` via key.

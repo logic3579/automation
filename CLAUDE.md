@@ -65,8 +65,11 @@ ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
 cd ansible/ && ansible-lint --offline playbooks/ roles/
 
 # One-time bootstrap on a new machine: install required collections to the user-standard
-# location so ansible-lint's own venv (and any other tool) can find them automatically
-ansible-galaxy collection install -r requirements.yml
+# location so ansible-lint's own venv (and any other tool) can find them automatically.
+# Use --force because some Ansible distributions bundle collections in their private
+# Python site-packages path, causing ansible-galaxy to report "Nothing to do" without
+# populating ~/.ansible/collections.
+ansible-galaxy collection install -r requirements.yml -p ~/.ansible/collections --force
 ```
 
 ### Salt

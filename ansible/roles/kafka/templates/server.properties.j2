@@ -1,8 +1,8 @@
 # {{ ansible_managed }}
 process.roles=broker,controller
-node.id={{ host_index }}
-controller.quorum.voters={{ controller_ips }}
-listeners=PLAINTEXT://{{ host_ip }}:9092,CONTROLLER://{{ host_ip }}:9093
+node.id={{ kafka_host_index }}
+controller.quorum.voters={{ kafka_controller_ips }}
+listeners=PLAINTEXT://{{ kafka_host_ip }}:9092,CONTROLLER://{{ kafka_host_ip }}:9093
 inter.broker.listener.name=PLAINTEXT
 #advertised.listeners=PLAINTEXT://:9092
 controller.listener.names=CONTROLLER

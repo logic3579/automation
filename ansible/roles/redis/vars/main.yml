@@ -8,15 +8,14 @@ redis_pkg_name: "redis-{{ redis_version }}.tar.gz"
 redis_src_path: /usr/local/src
 
 # Computed from inventory
-host_ip: "{{ ansible_default_ipv4['address'] }}"
+redis_host_ip: "{{ ansible_default_ipv4['address'] }}"
 redis_cluster_init_info: >-
   {%- for index in range(ansible_play_batch | length) -%}
   {{ ansible_play_batch[index] }}:{{ redis_cluster_ports[index * 2] }}
-  {{ ansible_play_batch[index] }}:{{ redis_cluster_ports[index * 2 + 1] }}
-  {%- if not loop.last %} {% endif %}{% endfor %}
+  {{ ansible_play_batch[index] }}:{{ redis_cluster_ports[index * 2 + 1] }}{%- if not loop.last %} {% endif %}{%- endfor %}
 
 # redis.conf computed settings
-redis_bind: "{{ host_ip }}"
+redis_bind: "{{ redis_host_ip }}"
 redis_pidfile: "./redis.pid"
 redis_logfile: "./redis.log"
 redis_dir: "{{ redis_root_path }}/{{ redis_port }}"

@@ -49,8 +49,8 @@
 
 - name: Reload system library paths
   ansible.builtin.command: ldconfig
-  register: ldconfig_result
-  changed_when: ldconfig_result.rc == 0
+  register: nginx_ldconfig_result
+  changed_when: nginx_ldconfig_result.rc == 0
 
 - name: Ensure logrotate directory exists
   ansible.builtin.file:

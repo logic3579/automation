@@ -10,7 +10,7 @@ Type=forking
 User=kafka
 Group=kafka
 Environment=KAFKA_HOME=/opt/kafka
-Environment=KAFKA_HEAP_OPTS="{{ jvm_memory_opts }}"
+Environment=KAFKA_HEAP_OPTS="{{ kafka_jvm_memory_opts }}"
 Environment=KAFKA_CLUSTER_ID={{ kafka_cluster_uuid.stdout }}
 ExecStartPre=/opt/kafka/bin/kafka-storage.sh format -t $KAFKA_CLUSTER_ID -c {{ kafka_config }} --ignore-formatted
 ExecStart=/opt/kafka/bin/kafka-server-start.sh -daemon {{ kafka_config }}

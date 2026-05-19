@@ -8,8 +8,8 @@ server {{ server }} iburst
 driftfile /var/lib/chrony/drift
 
 # Allow the system clock to be stepped in the first updates
-# if its offset is larger than {{ chrony_makestep_threshold }} second.
-makestep {{ chrony_makestep_threshold }} {{ chrony_makestep_limit }}
+# if its offset is larger than {{ ntp_chrony_makestep_threshold }} second.
+makestep {{ ntp_chrony_makestep_threshold }} {{ ntp_chrony_makestep_limit }}
 
 # Enable kernel synchronization of the real-time clock (RTC).
 rtcsync

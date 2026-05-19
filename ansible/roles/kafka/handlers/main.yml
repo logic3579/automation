@@ -8,7 +8,7 @@
 
 - name: Verify kafka is listening
   ansible.builtin.wait_for:
-    host: "{{ host_ip }}"
+    host: "{{ kafka_host_ip }}"
     port: 9092
     delay: 15
     timeout: 60

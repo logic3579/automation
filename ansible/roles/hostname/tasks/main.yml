@@ -1,7 +1,7 @@
 ---
 - name: Set system hostname
   ansible.builtin.hostname:
-    name: "{{ _hostname }}"
+    name: "{{ _hostname_value }}"
 
 - name: Map hostname in /etc/hosts
   ansible.builtin.lineinfile:

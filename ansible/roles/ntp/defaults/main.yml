@@ -16,8 +16,8 @@ ntp_timezone: Asia/Shanghai
 ntp_enabled: true
 
 # Chrony-specific settings
-chrony_makestep_threshold: 1
-chrony_makestep_limit: 3
+ntp_chrony_makestep_threshold: 1
+ntp_chrony_makestep_limit: 3
 
 # Allow NTP clients from these networks (empty = no clients allowed)
 ntp_allow_networks: []

@@ -8,7 +8,7 @@
 
 - name: Verify nginx is listening
   ansible.builtin.wait_for:
-    host: "{{ host_ip }}"
+    host: "{{ nginx_host_ip }}"
     port: "{{ nginx_port }}"
     delay: 15
     timeout: 60

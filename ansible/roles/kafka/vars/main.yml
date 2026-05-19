@@ -7,10 +7,12 @@ kafka_dir_name: "kafka_{{ kafka_scala_version }}-{{ kafka_version }}"
 kafka_pkg_name: "kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz"
 
 # server.properties settings
-host_ip: "{{ ansible_default_ipv4['address'] }}"
-host_index: "{{ ansible_play_batch.index(inventory_hostname) + 1 }}"
-host_ips: "{{ ansible_play_batch }}"
-controller_ips: "{% for index in range(host_ips | length) %}{{ index + 1 }}@{{ host_ips[index] }}:9093{% if not loop.last %},{% endif %}{% endfor %}"
+kafka_host_ip: "{{ ansible_default_ipv4['address'] }}"
+kafka_host_index: "{{ ansible_play_batch.index(inventory_hostname) + 1 }}"
+kafka_host_ips: "{{ ansible_play_batch }}"
+kafka_controller_ips: >-
+  {%- for index in range(kafka_host_ips | length) -%}
+  {{ index + 1 }}@{{ kafka_host_ips[index] }}:9093{%- if not loop.last %},{% endif %}{%- endfor %}
 
 # kafka.service settings
 kafka_config: "{{ kafka_root_path }}/config/server.properties"

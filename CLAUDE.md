@@ -13,11 +13,11 @@ Infrastructure automation repository containing **Ansible** roles/playbooks and 
     - **`init.ini`** (bootstrap) targets broad IP ranges by infra type: `kvm` self-hosted, `cloud_aws` / `cloud_gcp` / `cloud_vps` cloud, all rolled up under `cloud:children`. Used by `kvm-init.yml` / `cloud-init.yml` / `vps-init.yml`.
     - **`hosts.ini`** (service deploy, default in `ansible.cfg`) lists only the specific hosts each service runs on. Each leaf group is named `<service>_<topology>_<infra>` (e.g. `kafka_cluster_kvm`, `rocketmq_2m2s_kvm`, `rocketmq_failover_kvm`); roll-ups `kvm:children` and `cloud:children` (currently containing `cloud_vps` for xray / sing-box hosts) let you target an entire infra type. Service playbooks default to this inventory — no `-i` flag needed.
     - `group_vars/` holds per-group variables shared by both inventories: `all`, `kvm`, `cloud`, `cloud_aws`, `cloud_gcp`, `cloud_vps`.
-  - `playbooks/` — Bootstrap (`kvm-init.yml`, `cloud-init.yml`, `vps-init.yml`) and service (`kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml`, `docker.yml`, `xray.yml`, `sing-box.yml`) entry points.
+  - `playbooks/` — Bootstrap (`kvm-init.yml`, `cloud-init.yml`, `vps-init.yml`), service (`kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml`, `docker.yml`, `xray.yml`, `sing-box.yml`), and developer-utility (`debug.yml`) entry points.
   - `roles/` — Standard Ansible role layout (`tasks/`, `handlers/`, `defaults/`, `vars/`, `templates/`, `files/`)
   - `keys/` — Single `devops.key/devops.pub` key pair authorized for the `devops` user on all managed hosts
-  - `ansible.cfg` — Config using `~/ansible/` as deployment root, `~/.ansible/tmp` for runtime temp
-  - `.gitignore` — Per-directory gitignore (vault files, retry files, runtime dirs, logs, all of `keys/` except `keys/README.md`)
+  - `ansible.cfg` — Paths resolved relative to the cfg file (`inventories/hosts.ini`, `roles/`); user-shared state lives under `~/.ansible/` (`cache/`, `ansible.log`). Smart gathering, `result_format=yaml`, profile_tasks + timer callbacks, force_handlers, pipelined SSH.
+  - `.gitignore` — Per-directory gitignore (vault files, retry files, runtime dirs, all of `keys/` except `keys/README.md`)
 - `saltproject/` — Salt states and pillars
   - `base/` — State tree with `top.sls` routing; states use `map.jinja` pattern for OS-family abstraction
   - `pillar/` — Pillar data (`top.sls` routes pillar to minions)
@@ -52,6 +52,11 @@ ansible-playbook -i inventories/init.ini playbooks/vps-init.yml --limit cloud_vp
 
 # Dry run (check mode)
 ansible-playbook playbooks/nginx.yml -C
+
+# Local debug toolkit (vault / inventory / facts / lookup / templating smoke tests on localhost)
+ansible-playbook playbooks/debug.yml --ask-vault-pass
+ansible-playbook playbooks/debug.yml --tags facts          # single section
+ansible-playbook playbooks/debug.yml -e target=kafka_cluster_kvm   # against a remote group
 
 # Vault operations
 ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
@@ -138,9 +143,9 @@ roles/<name>/
       dest: "{{ ntp_config_file }}"
       owner: root
       group: root
-      mode: '0644'
+      mode: "0644"
       backup: true
-    notify: restart ntp
+    notify: Restart ntp
   ```
 
 ### Handlers
@@ -192,5 +197,5 @@ roles/<name>/
 - **Template marker**: `ansible_managed` is defined as a regular variable in `group_vars/all.yml` (using template magic vars `template_path`/`template_uid`/`template_host`). The deprecated `ansible.cfg` `DEFAULT_MANAGED_STR` setting was removed (slated for removal in ansible-core 2.23).
 - **Existing roles**: audit, categraf, docker, fact, hostname, kafka, nginx, ntp, promtail, redis, rocketmq, security, sing-box, sshd, sysctl, user, xray.
 - **Salt states** use the `map.jinja` pattern for cross-platform support (Debian/RedHat).
-- **Ansible config** (`ansible.cfg`): 50 forks, SSH pipelining enabled, fact caching to JSON files, `interpreter_python = auto`, paths relative to `~/ansible/`.
+- **Ansible config** (`ansible.cfg`): paths are relative (resolved against the cfg file's directory, so both the repo layout and a standalone `~/ansible/` deploy work). 50 forks, SSH pipelining, smart gathering (re-uses JSON fact cache when fresh), `result_format = yaml` for readable per-task output, `ansible.posix.profile_tasks` + `timer` callbacks for per-task / total-play timing, `force_handlers = True` so handlers still fire on partial failure, `host_key_checking = False` for bootstrap. User-shared state (log + fact cache) lives under `~/.ansible/`.
 - **Gitignore strategy**: Per-directory `.gitignore` files (in `ansible/` and `saltproject/`) instead of root-level, ensuring rules work when directories are deployed standalone. `ansible/keys/` uses `keys/*` + `!keys/README.md` so private key material never gets committed but the README stays tracked.

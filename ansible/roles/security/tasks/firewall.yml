@@ -22,10 +22,9 @@
     group: root
     mode: "0600"
     backup: true
-  register: iptables_rules
   notify: Restart iptables
 
-- name: Apply iptables rules
-  ansible.builtin.command: /sbin/iptables-restore /etc/sysconfig/iptables
-  changed_when: true
-  when: iptables_rules is changed
+# Force handlers to run now: kvm-init.yml runs sshd after security in the
+# same play, so the new firewall rules must be active before SSH port changes.
+- name: Apply iptables rules immediately
+  ansible.builtin.meta: flush_handlers

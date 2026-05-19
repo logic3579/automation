@@ -6,7 +6,7 @@
     owner: root
     group: root
     mode: "0644"
-  notify: restart docker-cleanup timer
+  notify: Restart docker-cleanup timer
 
 - name: Deploy docker-cleanup timer unit
   ansible.builtin.template:
@@ -15,7 +15,7 @@
     owner: root
     group: root
     mode: "0644"
-  notify: restart docker-cleanup timer
+  notify: Restart docker-cleanup timer
 
 - name: Enable and start docker-cleanup timer
   ansible.builtin.systemd:

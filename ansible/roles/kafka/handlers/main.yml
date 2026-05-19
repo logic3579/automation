@@ -1,5 +1,5 @@
 ---
-- name: restart kafka
+- name: Restart kafka
   ansible.builtin.systemd:
     name: kafka
     daemon_reload: true
@@ -13,4 +13,4 @@
     delay: 15
     timeout: 60
     state: started
-  listen: restart kafka
+  listen: Restart kafka

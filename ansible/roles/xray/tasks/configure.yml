@@ -33,7 +33,7 @@
     group: root
     mode: "0644"
     backup: true
-  notify: restart xray
+  notify: Restart xray
 
 - name: Enable and start xray
   ansible.builtin.systemd:

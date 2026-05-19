@@ -6,7 +6,7 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-ExecStart=/opt/rocketmq/bin/mqbroker -c {{ master_config }}
+ExecStart=/opt/rocketmq/bin/mqbroker -c {{ rocketmq_master_config }}
 LimitNOFILE=655350
 LimitNPROC=65535
 NoNewPrivileges=yes

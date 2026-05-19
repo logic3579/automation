@@ -55,8 +55,11 @@ ansible-playbook playbooks/nginx.yml -C
 # Vault operations
 ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
 
-# Lint
-ansible-lint playbooks/nginx.yml
+# Lint (local dev: ansible.cfg's inventory points at ~/ansible/... so override here,
+# and point ansible-lint's venv at the collections shipped with the homebrew ansible)
+ANSIBLE_INVENTORY=inventories/hosts.ini \
+ANSIBLE_COLLECTIONS_PATH=/opt/homebrew/Cellar/ansible/13.6.0_1/libexec/lib/python3.14/site-packages \
+ansible-lint --offline playbooks/ roles/
 ```
 
 ### Salt
@@ -140,10 +143,10 @@ roles/<name>/
 
 ### Handlers
 
-- **Lowercase verb-noun** naming: `restart ntp`, `restart kafka`, `restart sshd`.
+- **Capitalized verb-noun** naming (ansible-lint `name[casing]` rule): `Restart ntp`, `Restart kafka`, `Restart sshd`. All `notify:` and `listen:` references must match exactly.
 - Port verification uses `listen:` to chain on the restart handler:
   ```yaml
-  - name: restart kafka
+  - name: Restart kafka
     ansible.builtin.systemd:
       name: kafka
       daemon_reload: true
@@ -157,7 +160,7 @@ roles/<name>/
       delay: 15
       timeout: 60
       state: started
-    listen: restart kafka
+    listen: Restart kafka
   ```
 
 ### Anti-patterns to Avoid

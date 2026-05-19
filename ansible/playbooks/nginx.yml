@@ -2,9 +2,10 @@
 # Usage:
 #   ansible-playbook -i inventories/init.ini playbooks/nginx.yml --limit nginx_standalone_kvm
 
-- hosts: all
+- name: Deploy Nginx
+  hosts: all
   remote_user: root
-  become: yes
-  become_method: su
+  become: true
+  become_method: ansible.builtin.su
   roles:
     - { role: nginx }

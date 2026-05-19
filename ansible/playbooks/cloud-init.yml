@@ -14,7 +14,8 @@
 #   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aws
 #   # GCP VM
 #   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_gcp
-- hosts: all
+- name: Cloud VM bootstrap
+  hosts: all
   vars:
     ansible_user: ubuntu
     ansible_port: 22

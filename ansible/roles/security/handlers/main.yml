@@ -1,3 +1,4 @@
 ---
-- name: restart iptables
+- name: Restart iptables
   ansible.builtin.command: /sbin/iptables-restore /etc/sysconfig/iptables
+  changed_when: true

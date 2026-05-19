@@ -1,5 +1,5 @@
 ---
-- name: restart sing-box
+- name: Restart sing-box
   ansible.builtin.systemd:
     name: sing-box
     daemon_reload: true
@@ -13,4 +13,4 @@
     delay: 5
     timeout: 30
     state: started
-  listen: restart sing-box
+  listen: Restart sing-box

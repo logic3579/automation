@@ -12,7 +12,8 @@
 #
 # Usage:
 #   ansible-playbook -i inventories/init.ini playbooks/vps-init.yml --limit cloud_vps --vault-id pwd.vault
-- hosts: all
+- name: VPS bootstrap
+  hosts: all
   vars:
     ansible_user: root
     ansible_port: 22

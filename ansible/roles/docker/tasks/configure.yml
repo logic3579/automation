@@ -15,7 +15,7 @@
     group: root
     mode: "0644"
     backup: true
-  notify: restart docker
+  notify: Restart docker
 
 - name: Enable and start docker
   ansible.builtin.systemd:

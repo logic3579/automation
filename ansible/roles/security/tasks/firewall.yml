@@ -23,7 +23,7 @@
     mode: "0600"
     backup: true
   register: iptables_rules
-  notify: restart iptables
+  notify: Restart iptables
 
 - name: Apply iptables rules
   ansible.builtin.command: /sbin/iptables-restore /etc/sysconfig/iptables

@@ -7,7 +7,8 @@
 #
 # Usage:
 #   ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml --limit kvm --vault-id pwd.vault
-- hosts: all
+- name: KVM bootstrap
+  hosts: all
   vars:
     ansible_user: root
     ansible_port: 22

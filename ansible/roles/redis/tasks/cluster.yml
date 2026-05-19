@@ -2,5 +2,5 @@
 - name: Trigger redis cluster initialization
   ansible.builtin.set_fact:
     redis_cluster_init: true
-  notify: init redis cluster
+  notify: Init redis cluster
   run_once: true

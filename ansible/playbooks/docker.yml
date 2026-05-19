@@ -6,9 +6,10 @@
 #   ansible-playbook -i inventories/init.ini playbooks/docker.yml --limit kvm \
 #     -e "docker_cleanup_schedule=daily docker_cleanup_image_age=72h"
 
-- hosts: all
+- name: Deploy Docker
+  hosts: all
   remote_user: root
   become: true
-  become_method: su
+  become_method: ansible.builtin.su
   roles:
     - docker

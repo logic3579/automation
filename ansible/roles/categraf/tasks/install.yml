@@ -23,6 +23,7 @@
   ansible.builtin.get_url:
     url: "{{ categraf_pkg_url }}"
     dest: "{{ role_path }}/files/{{ categraf_pkg_name }}"
+    mode: "0644"
     validate_certs: true
   delegate_to: localhost
   become: false
@@ -33,6 +34,7 @@
   ansible.builtin.copy:
     src: "{{ categraf_pkg_name }}"
     dest: "/tmp/{{ categraf_pkg_name }}"
+    mode: "0644"
 
 - name: Unarchive categraf package
   ansible.builtin.unarchive:

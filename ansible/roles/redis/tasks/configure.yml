@@ -1,7 +1,7 @@
 ---
 - name: Set redis cluster port facts
   ansible.builtin.set_fact:
-    redis_ports: "{{ redis_cluster_ports[(ansible_play_batch.index(inventory_hostname) * 2):(ansible_play_batch.index(inventory_hostname) * 2 + 2)] }}"
+    redis_ports: "{{ redis_cluster_ports[(ansible_play_batch.index(inventory_hostname) * 2) : (ansible_play_batch.index(inventory_hostname) * 2 + 2)] }}"
   when: redis_cluster_enabled == "yes"
 
 - name: Create redis group
@@ -38,7 +38,7 @@
   loop: "{{ redis_ports }}"
   loop_control:
     loop_var: redis_port
-  notify: restart redis
+  notify: Restart redis
 
 - name: Deploy redis systemd service files
   ansible.builtin.template:
@@ -51,7 +51,7 @@
   loop: "{{ redis_ports }}"
   loop_control:
     loop_var: redis_port
-  notify: restart redis
+  notify: Restart redis
 
 - name: Set redis directory permissions
   ansible.builtin.file:

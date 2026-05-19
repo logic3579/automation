@@ -23,7 +23,7 @@
     group: root
     mode: "0644"
     backup: true
-  notify: restart sing-box
+  notify: Restart sing-box
 
 - name: Enable and start sing-box
   ansible.builtin.systemd:

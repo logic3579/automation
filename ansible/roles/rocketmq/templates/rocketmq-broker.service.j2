@@ -6,7 +6,7 @@ Wants=network-online.target
 After=network-online.target rocketmq-namesrv.service
 
 [Service]
-ExecStart=/opt/rocketmq/bin/mqbroker -c {{ broker_config }}
+ExecStart=/opt/rocketmq/bin/mqbroker -c {{ rocketmq_broker_config }}
 LimitNOFILE=655350
 LimitNPROC=65535
 NoNewPrivileges=yes

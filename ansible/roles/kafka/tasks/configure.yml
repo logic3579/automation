@@ -16,6 +16,7 @@
   args:
     chdir: "{{ kafka_root_path }}"
   register: kafka_cluster_uuid
+  changed_when: false
   when: kafka_cluster_uuid is not defined
   run_once: true
 
@@ -30,7 +31,7 @@
   loop:
     - { src: server.properties.j2, dest: "{{ kafka_config }}" }
     - { src: kafka.service.j2, dest: /etc/systemd/system/kafka.service }
-  notify: restart kafka
+  notify: Restart kafka
 
 - name: Set kafka directory permissions
   ansible.builtin.file:

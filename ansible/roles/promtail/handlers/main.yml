@@ -1,5 +1,5 @@
 ---
-- name: restart promtail
+- name: Restart promtail
   ansible.builtin.systemd:
     name: "{{ promtail_service_name }}"
     state: restarted

@@ -1,5 +1,5 @@
 ---
-- name: restart redis
+- name: Restart redis
   ansible.builtin.systemd:
     name: "redis-{{ redis_port }}"
     daemon_reload: true
@@ -13,15 +13,16 @@
     delay: 15
     timeout: 60
     state: started
-  listen: restart redis
+  listen: Restart redis
 
-- name: init redis cluster
+- name: Init redis cluster
   ansible.builtin.command: ./bin/redis-cli --cluster create {{ redis_cluster_init_info }} --cluster-replicas 1 --cluster-yes -a {{ redis_password }}
   args:
     chdir: "{{ redis_root_path }}"
   register: init_cluster_result
+  changed_when: "'OK' in init_cluster_result.stdout"
 
 - name: Print cluster initialization result
   ansible.builtin.debug:
     msg: "{{ init_cluster_result.stdout }}"
-  listen: init redis cluster
+  listen: Init redis cluster

@@ -5,10 +5,11 @@
 # 3-node cluster (KRaft quorum, replication factor = 3)
 #   ansible-playbook -i inventories/init.ini playbooks/kafka.yml --limit kafka_cluster_kvm -e "kafka_cluster_enabled=yes"
 
-- hosts: all
+- name: Deploy Kafka
+  hosts: all
   remote_user: root
   become: true
-  become_method: su
+  become_method: ansible.builtin.su
   gather_facts: false
   serial: 1
   roles:

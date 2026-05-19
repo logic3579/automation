@@ -1,10 +1,10 @@
 # {{ ansible_managed }}
-brokerClusterName={{ cluster_name }}
-brokerName={{ slave_broker_name }}
+brokerClusterName={{ rocketmq_cluster_name }}
+brokerName={{ rocketmq_slave_broker_name }}
 brokerId=1
-namesrvAddr={{ namesrv_addr }}
-bindAddress={{ bind_addr }}
-listenPort={{ slave_port }}
+namesrvAddr={{ rocketmq_namesrv_addr }}
+bindAddress={{ rocketmq_bind_addr }}
+listenPort={{ rocketmq_slave_port }}
 storePathRootDir={{ rocketmq_root_path }}/store-s
 deleteWhen=04
 diskMaxUsedSpaceRatio=85

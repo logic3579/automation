@@ -1,24 +1,24 @@
 # {{ ansible_managed }}
-brokerClusterName={{ cluster_name }}
+brokerClusterName={{ rocketmq_cluster_name }}
 {% if rocketmq_mode == 'failover' %}
-brokerName={{ dledger_group }}
+brokerName={{ rocketmq_dledger_group }}
 brokerId=0
 {% else %}
-brokerName=broker-{{ host_index }}
+brokerName=broker-{{ rocketmq_host_index }}
 brokerId=0
 {% endif %}
-namesrvAddr={{ namesrv_addr }}
-bindAddress={{ bind_addr }}
-listenPort={{ broker_port }}
+namesrvAddr={{ rocketmq_namesrv_addr }}
+bindAddress={{ rocketmq_bind_addr }}
+listenPort={{ rocketmq_broker_port }}
 storePathRootDir={{ rocketmq_root_path }}/store
 deleteWhen=04
 diskMaxUsedSpaceRatio=85
 fileReservedTime=48
 {% if rocketmq_mode == 'failover' %}
 enableDLegerCommitLog=true
-dLegerGroup={{ dledger_group }}
-dLegerPeers={{ dledger_peers }}
-dLegerSelfId={{ dledger_self_id }}
+dLegerGroup={{ rocketmq_dledger_group }}
+dLegerPeers={{ rocketmq_dledger_peers }}
+dLegerSelfId={{ rocketmq_dledger_self_id }}
 sendMessageThreadPoolNums=16
 {% else %}
 brokerRole=ASYNC_MASTER

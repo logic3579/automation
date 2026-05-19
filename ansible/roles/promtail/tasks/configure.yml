@@ -19,7 +19,7 @@
     group: "{{ promtail_group }}"
     mode: "0644"
     backup: true
-  notify: restart promtail
+  notify: Restart promtail
 
 - name: Deploy promtail systemd service
   ansible.builtin.template:
@@ -29,7 +29,7 @@
     group: root
     mode: "0644"
     backup: true
-  notify: restart promtail
+  notify: Restart promtail
 
 - name: Set ownership on promtail directory
   ansible.builtin.file:

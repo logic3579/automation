@@ -1,5 +1,5 @@
 ---
-- name: restart xray
+- name: Restart xray
   ansible.builtin.systemd:
     name: xray
     daemon_reload: true
@@ -13,4 +13,4 @@
     delay: 5
     timeout: 30
     state: started
-  listen: restart xray
+  listen: Restart xray

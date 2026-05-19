@@ -12,6 +12,7 @@
   ansible.builtin.get_url:
     url: "{{ kafka_pkg_url }}"
     dest: "{{ role_path }}/files/{{ kafka_pkg_name }}"
+    mode: "0644"
     validate_certs: true
   delegate_to: localhost
   become: false

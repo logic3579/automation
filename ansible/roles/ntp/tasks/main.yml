@@ -1,7 +1,7 @@
 ---
 # tasks file for ntp
 - name: Set timezone
-  ansible.builtin.timezone:
+  community.general.timezone:
     name: "{{ ntp_timezone }}"
 
 - name: Install NTP package
@@ -18,7 +18,7 @@
     group: root
     mode: "0644"
     backup: true
-  notify: restart ntp
+  notify: Restart ntp
 
 - name: Enable and start NTP service
   ansible.builtin.systemd:

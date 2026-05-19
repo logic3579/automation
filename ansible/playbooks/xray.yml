@@ -6,9 +6,10 @@
 #   ansible-playbook -i inventories/init.ini playbooks/xray.yml --limit cloud_vps \
 #     --vault-id pwd.vault -e "xray_protocol=vless-reality"
 
-- hosts: all
+- name: Deploy Xray
+  hosts: all
   remote_user: devops
   become: true
-  become_method: sudo
+  become_method: ansible.builtin.sudo
   roles:
     - xray

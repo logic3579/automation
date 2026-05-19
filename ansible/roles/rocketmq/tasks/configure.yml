@@ -19,7 +19,7 @@
     group: root
     mode: "0644"
     backup: true
-  notify: restart rocketmq
+  notify: Restart rocketmq
 
 - name: Deploy standalone broker configuration
   ansible.builtin.template:
@@ -30,10 +30,10 @@
     mode: "0644"
     backup: true
   loop:
-    - { src: broker.properties.j2, dest: "{{ broker_config }}" }
+    - { src: broker.properties.j2, dest: "{{ rocketmq_broker_config }}" }
     - { src: rocketmq-broker.service.j2, dest: /etc/systemd/system/rocketmq-broker.service }
   when: rocketmq_mode == 'standalone'
-  notify: restart rocketmq
+  notify: Restart rocketmq
 
 - name: Deploy 2m-2s-sync master/slave configuration
   ansible.builtin.template:
@@ -44,12 +44,12 @@
     mode: "0644"
     backup: true
   loop:
-    - { src: master.properties.j2, dest: "{{ master_config }}" }
-    - { src: slave.properties.j2, dest: "{{ slave_config }}" }
+    - { src: master.properties.j2, dest: "{{ rocketmq_master_config }}" }
+    - { src: slave.properties.j2, dest: "{{ rocketmq_slave_config }}" }
     - { src: rocketmq-master.service.j2, dest: /etc/systemd/system/rocketmq-master.service }
     - { src: rocketmq-slave.service.j2, dest: /etc/systemd/system/rocketmq-slave.service }
   when: rocketmq_mode == '2m-2s-sync'
-  notify: restart rocketmq
+  notify: Restart rocketmq
 
 - name: Deploy failover (DLedger) broker configuration
   ansible.builtin.template:
@@ -60,22 +60,22 @@
     mode: "0644"
     backup: true
   loop:
-    - { src: broker.properties.j2, dest: "{{ broker_config }}" }
+    - { src: broker.properties.j2, dest: "{{ rocketmq_broker_config }}" }
     - { src: rocketmq-broker.service.j2, dest: /etc/systemd/system/rocketmq-broker.service }
   when: rocketmq_mode == 'failover'
-  notify: restart rocketmq
+  notify: Restart rocketmq
 
 - name: Set JVM memory options for namesrv
   ansible.builtin.replace:
     path: "{{ rocketmq_root_path }}/bin/runserver.sh"
     regexp: '-Xms\d+g -Xmx\d+g'
-    replace: '{{ namesrv_jvm_memory }}'
+    replace: '{{ rocketmq_namesrv_jvm_memory }}'
 
 - name: Set JVM memory options for broker
   ansible.builtin.replace:
     path: "{{ rocketmq_root_path }}/bin/runbroker.sh"
     regexp: '-Xms\d+g -Xmx\d+g'
-    replace: '{{ broker_jvm_memory }}'
+    replace: '{{ rocketmq_broker_jvm_memory }}'
 
 - name: Set rocketmq directory permissions
   ansible.builtin.file:

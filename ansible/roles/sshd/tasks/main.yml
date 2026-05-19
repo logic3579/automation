@@ -14,7 +14,7 @@
     mode: "0600"
     backup: true
     validate: 'sshd -t -f %s'
-  notify: restart sshd
+  notify: Restart sshd
 
 - name: Enable and start sshd
   ansible.builtin.systemd:

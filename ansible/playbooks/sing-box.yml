@@ -6,9 +6,10 @@
 #   ansible-playbook -i inventories/init.ini playbooks/sing-box.yml --limit cloud_vps \
 #     --vault-id pwd.vault -e "sing_box_protocol=vless-reality"
 
-- hosts: all
+- name: Deploy sing-box
+  hosts: all
   remote_user: devops
   become: true
-  become_method: sudo
+  become_method: ansible.builtin.sudo
   roles:
     - sing-box

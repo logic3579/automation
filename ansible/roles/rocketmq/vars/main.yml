@@ -7,39 +7,39 @@ rocketmq_dir_name: "rocketmq-all-{{ rocketmq_version }}-bin-release"
 rocketmq_pkg_name: "rocketmq-all-{{ rocketmq_version }}-bin-release.zip"
 
 # Host facts
-host_ip: "{{ ansible_default_ipv4['address'] }}"
-host_index: "{{ ansible_play_batch.index(inventory_hostname) }}"
-host_count: "{{ ansible_play_batch | length }}"
+rocketmq_host_ip: "{{ ansible_default_ipv4['address'] }}"
+rocketmq_host_index: "{{ ansible_play_batch.index(inventory_hostname) }}"
+rocketmq_host_count: "{{ ansible_play_batch | length }}"
 
 # NameServer cluster address (all hosts in the play batch)
-namesrv_addr: "{% for h in ansible_play_batch %}{{ h }}:{{ namesrv_port }}{% if not loop.last %};{% endif %}{% endfor %}"
-bind_addr: "{{ host_ip }}"
+rocketmq_namesrv_addr: "{% for h in ansible_play_batch %}{{ h }}:{{ rocketmq_namesrv_port }}{% if not loop.last %};{% endif %}{% endfor %}"
+rocketmq_bind_addr: "{{ rocketmq_host_ip }}"
 
 # 2m-2s-sync cross-pairing: slave on host_i protects master on host_((i+1) % N)
-master_broker_name: "broker-{{ ansible_play_batch.index(inventory_hostname) }}"
-slave_broker_name: "broker-{{ (ansible_play_batch.index(inventory_hostname) + 1) % (ansible_play_batch | length) }}"
+rocketmq_master_broker_name: "broker-{{ ansible_play_batch.index(inventory_hostname) }}"
+rocketmq_slave_broker_name: "broker-{{ (ansible_play_batch.index(inventory_hostname) + 1) % (ansible_play_batch | length) }}"
 
 # DLedger (failover) computed values
-dledger_group: "{{ cluster_name }}-dledger"
-dledger_self_id: "n{{ ansible_play_batch.index(inventory_hostname) }}"
-dledger_peers: "{% for h in ansible_play_batch %}n{{ loop.index0 }}-{{ h }}:{{ dledger_port }}{% if not loop.last %};{% endif %}{% endfor %}"
+rocketmq_dledger_group: "{{ rocketmq_cluster_name }}-dledger"
+rocketmq_dledger_self_id: "n{{ ansible_play_batch.index(inventory_hostname) }}"
+rocketmq_dledger_peers: "{% for h in ansible_play_batch %}n{{ loop.index0 }}-{{ h }}:{{ rocketmq_dledger_port }}{% if not loop.last %};{% endif %}{% endfor %}"
 
 # Config paths
-broker_config: "{{ rocketmq_root_path }}/conf/broker.properties"
-master_config: "{{ rocketmq_root_path }}/conf/2m-2s-sync/broker-m.properties"
-slave_config: "{{ rocketmq_root_path }}/conf/2m-2s-sync/broker-s.properties"
+rocketmq_broker_config: "{{ rocketmq_root_path }}/conf/broker.properties"
+rocketmq_master_config: "{{ rocketmq_root_path }}/conf/2m-2s-sync/broker-m.properties"
+rocketmq_slave_config: "{{ rocketmq_root_path }}/conf/2m-2s-sync/broker-s.properties"
 
 # Mode-derived service set
 _rocketmq_services_standalone:
-  - { name: rocketmq-namesrv, port: "{{ namesrv_port }}" }
-  - { name: rocketmq-broker, port: "{{ broker_port }}" }
+  - { name: rocketmq-namesrv, port: "{{ rocketmq_namesrv_port }}" }
+  - { name: rocketmq-broker, port: "{{ rocketmq_broker_port }}" }
 _rocketmq_services_2m_2s:
-  - { name: rocketmq-namesrv, port: "{{ namesrv_port }}" }
-  - { name: rocketmq-master, port: "{{ master_port }}" }
-  - { name: rocketmq-slave, port: "{{ slave_port }}" }
+  - { name: rocketmq-namesrv, port: "{{ rocketmq_namesrv_port }}" }
+  - { name: rocketmq-master, port: "{{ rocketmq_master_port }}" }
+  - { name: rocketmq-slave, port: "{{ rocketmq_slave_port }}" }
 _rocketmq_services_failover:
-  - { name: rocketmq-namesrv, port: "{{ namesrv_port }}" }
-  - { name: rocketmq-broker, port: "{{ broker_port }}" }
+  - { name: rocketmq-namesrv, port: "{{ rocketmq_namesrv_port }}" }
+  - { name: rocketmq-broker, port: "{{ rocketmq_broker_port }}" }
 rocketmq_services: >-
   {{ _rocketmq_services_standalone if rocketmq_mode == 'standalone'
      else (_rocketmq_services_2m_2s if rocketmq_mode == '2m-2s-sync'

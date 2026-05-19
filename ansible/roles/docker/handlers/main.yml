@@ -1,12 +1,12 @@
 ---
-- name: restart docker
+- name: Restart docker
   ansible.builtin.systemd:
     name: docker
     daemon_reload: true
     state: restarted
     enabled: true
 
-- name: restart docker-cleanup timer
+- name: Restart docker-cleanup timer
   ansible.builtin.systemd:
     name: docker-cleanup.timer
     daemon_reload: true

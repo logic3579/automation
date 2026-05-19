@@ -18,15 +18,15 @@ rocketmq_dashboard_enabled: false
 rocketmq_exporter_enabled: false
 
 # JVM settings
-namesrv_jvm_memory: "-Xms2g -Xmx2g"
-broker_jvm_memory: "-Xms2g -Xmx2g"
+rocketmq_namesrv_jvm_memory: "-Xms2g -Xmx2g"
+rocketmq_broker_jvm_memory: "-Xms2g -Xmx2g"
 
 # Cluster settings
-cluster_name: DefaultCluster
+rocketmq_cluster_name: DefaultCluster
 
 # Port settings
-namesrv_port: 9876
-broker_port: 10911            # standalone + failover broker listen port
-master_port: 6888             # 2m-2s-sync master listen port
-slave_port: 7888              # 2m-2s-sync slave listen port
-dledger_port: 40911           # DLedger Raft RPC port (failover mode)
+rocketmq_namesrv_port: 9876
+rocketmq_broker_port: 10911            # standalone + failover broker listen port
+rocketmq_master_port: 6888             # 2m-2s-sync master listen port
+rocketmq_slave_port: 7888              # 2m-2s-sync slave listen port
+rocketmq_dledger_port: 40911           # DLedger Raft RPC port (failover mode)

@@ -1,5 +1,5 @@
 ---
-- name: restart nginx
+- name: Restart nginx
   ansible.builtin.systemd:
     name: nginx
     daemon_reload: true
@@ -13,4 +13,4 @@
     delay: 15
     timeout: 60
     state: started
-  listen: restart nginx
+  listen: Restart nginx

@@ -1,4 +1,12 @@
 {
+  "extraKnownMarketplaces": {
+    "buildwithclaude": {
+      "source": {
+        "source": "github",
+        "repo": "davepoon/buildwithclaude"
+      }
+    }
+  },
   "enabledPlugins": {
     "agents-infrastructure-operations@buildwithclaude": true
   }

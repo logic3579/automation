@@ -6,6 +6,6 @@
 - name: Map hostname in /etc/hosts
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    regexp: '^{{ ansible_default_ipv4.address | regex_escape }}\s'
+    regexp: '^{{ ansible_facts.default_ipv4.address | regex_escape }}\s'
     line: "{{ _hostname_hosts_line }}"
     state: present

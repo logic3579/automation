@@ -1,5 +1,5 @@
 ---
 # Debian-family (Debian, Ubuntu) install paths
-_docker_apt_url: "https://download.docker.com/linux/{{ 'ubuntu' if ansible_distribution == 'Ubuntu' else 'debian' }}"
+_docker_apt_url: "https://download.docker.com/linux/{{ 'ubuntu' if ansible_facts.distribution == 'Ubuntu' else 'debian' }}"
 _docker_apt_keyring: /etc/apt/keyrings/docker.asc
 _docker_apt_sources: /etc/apt/sources.list.d/docker.sources

@@ -1,9 +1,16 @@
-# Cloud VM steady-state: connect as devops via key after cloud-init.yml has
+# Cloud / VPS steady-state: connect as devops via key after cloud-init.yml has
 # run. During initialization, playbooks/cloud-init.yml overrides ansible_user
 # to the cloud image's default account (e.g. ubuntu) in its vars block.
 ansible_user: devops
 ansible_port: 22
-ansible_ssh_private_key_file: keys/devops.key
+ansible_ssh_private_key_file: keys/devops_key
 
-# Cloud instances typically use UTC
+# UTC + public NTP pool covers both managed cloud (AWS / GCP / Aliyun /
+# Tencent — most providers redirect the public pool at the hypervisor level
+# anyway) and third-party VPS targets.
 ntp_timezone: "UTC"
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org

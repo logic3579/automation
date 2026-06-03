@@ -1,6 +1,6 @@
 # {{ ansible_managed }}
 [global]
-hostname = "{{ categraf_hostname | default(ansible_hostname) }}"
+hostname = "{{ categraf_hostname | default(ansible_facts.hostname) }}"
 interval = {{ categraf_interval }}
 providers = {{ categraf_providers | to_json }}
 {% if categraf_global_labels %}

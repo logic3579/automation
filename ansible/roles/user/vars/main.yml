@@ -4,4 +4,4 @@ _user_sudo_groups:
   Debian: sudo
   RedHat: wheel
 
-user_sudo_group: "{{ _user_sudo_groups[ansible_os_family] }}"
+user_sudo_group: "{{ _user_sudo_groups[ansible_facts.os_family] }}"

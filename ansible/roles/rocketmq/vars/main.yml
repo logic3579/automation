@@ -7,7 +7,7 @@ rocketmq_dir_name: "rocketmq-all-{{ rocketmq_version }}-bin-release"
 rocketmq_pkg_name: "rocketmq-all-{{ rocketmq_version }}-bin-release.zip"
 
 # Host facts
-rocketmq_host_ip: "{{ ansible_default_ipv4['address'] }}"
+rocketmq_host_ip: "{{ ansible_facts.default_ipv4.address }}"
 rocketmq_host_index: "{{ ansible_play_batch.index(inventory_hostname) }}"
 rocketmq_host_count: "{{ ansible_play_batch | length }}"
 

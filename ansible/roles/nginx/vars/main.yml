@@ -2,6 +2,6 @@
 # vars file for nginx
 # Internal/computed variables - do not override
 
-nginx_host_ip: "{{ ansible_default_ipv4['address'] }}"
+nginx_host_ip: "{{ ansible_facts.default_ipv4.address }}"
 nginx_bin: "{{ nginx_root_path }}/sbin/nginx"
 nginx_lib_path: "{{ nginx_root_path }}/lib/"

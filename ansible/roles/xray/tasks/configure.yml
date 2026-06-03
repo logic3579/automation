@@ -14,7 +14,7 @@
     owner: nobody
     group: nogroup
     mode: "0755"
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
 
 - name: Ensure xray log directory exists
   ansible.builtin.file:
@@ -23,7 +23,7 @@
     owner: nobody
     group: nobody
     mode: "0755"
-  when: ansible_os_family == "RedHat"
+  when: ansible_facts.os_family == "RedHat"
 
 - name: Deploy xray configuration
   ansible.builtin.template:

@@ -1,13 +1,16 @@
 ---
 # Auto-generated hostname: prefix + last two octets of default IPv4, lowercased
-_hostname_generated: "{{ ((hostname_prefix | default('ecs', true)) ~ '-' ~ ansible_default_ipv4.address.split('.')[-2:] | join('-')) | lower }}"
+_hostname_generated: "{{ ((hostname_prefix | default('ecs', true)) ~ '-' ~ ansible_facts.default_ipv4.address.split('.')[-2:] | join('-')) | lower }}"
 
-# Short hostname extracted from FQDN (e.g., ip-10-0-1-5.ec2.internal -> ip-10-0-1-5)
-_hostname_from_fqdn: "{{ ansible_fqdn.split('.')[0] }}"
+# Short hostname extracted from FQDN (e.g., ip-10-0-1-5.ec2.internal -> ip-10-0-1-5).
+# Some cloud images (e.g. Tencent Ubuntu) ship with a /etc/hosts entry that makes
+# getfqdn() return localhost.localdomain even though the kernel hostname holds
+# the real cloud-assigned name — fall back to ansible_facts.hostname in that case.
+_hostname_from_fqdn: "{{ ansible_facts.hostname if ansible_facts.fqdn.startswith('localhost') else ansible_facts.fqdn.split('.')[0] }}"
 
 # Final hostname: explicit name takes priority, then mode-based auto-generation
 _hostname_value: "{{ hostname_name if (hostname_name | length > 0) else (_hostname_from_fqdn if hostname_mode == 'fqdn_short' else _hostname_generated) }}"
 
 # /etc/hosts entry: append original FQDN as alias in fqdn_short mode
-_hostname_fqdn_alias: "{{ (' ' ~ ansible_fqdn) if (hostname_mode == 'fqdn_short' and ansible_fqdn != _hostname_value) else '' }}"
-_hostname_hosts_line: "{{ ansible_default_ipv4.address }} {{ _hostname_value }}{{ _hostname_fqdn_alias }}"
+_hostname_fqdn_alias: "{{ (' ' ~ ansible_facts.fqdn) if (hostname_mode == 'fqdn_short' and ansible_facts.fqdn != _hostname_value) else '' }}"
+_hostname_hosts_line: "{{ ansible_facts.default_ipv4.address }} {{ _hostname_value }}{{ _hostname_fqdn_alias }}"

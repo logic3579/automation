@@ -7,7 +7,7 @@ kafka_dir_name: "kafka_{{ kafka_scala_version }}-{{ kafka_version }}"
 kafka_pkg_name: "kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz"
 
 # server.properties settings
-kafka_host_ip: "{{ ansible_default_ipv4['address'] }}"
+kafka_host_ip: "{{ ansible_facts.default_ipv4.address }}"
 kafka_host_index: "{{ ansible_play_batch.index(inventory_hostname) + 1 }}"
 kafka_host_ips: "{{ ansible_play_batch }}"
 kafka_controller_ips: >-

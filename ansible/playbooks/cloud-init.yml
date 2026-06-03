@@ -1,28 +1,36 @@
 ---
-# Cloud VM initialization playbook for AWS/GCP instances.
+# Cloud / third-party VPS initialization playbook.
 #
 # Bootstrap connection: the cloud image's default user (ubuntu/ec2-user) with
-# devops.pub pre-injected at VM creation time, authenticated via devops.key.
-# The user role then provisions the devops user on the VM so subsequent runs
-# can connect as devops directly (see group_vars/cloud.yml).
+# devops_key.pub pre-injected at VM creation time, authenticated via devops_key.
+# Same flow applies to third-party VPS providers (Vultr, DigitalOcean, Hetzner)
+# as long as they ship with ubuntu + the public key pre-injected.
 #
-# Unlike kvm-init.yml, cloud VMs do not run the sshd role: SSH stays on port 22
-# and firewall is handled by cloud security groups / VPC firewall rules.
+# The host firewall stays disabled — cloud security groups / VPC firewall rules
+# (or the VPS provider's own network ACL) handle ingress. The sshd role still
+# runs as defense in depth (key-only auth, restricted root login), which is
+# particularly important for VPS hosts that lack provider-managed network ACLs.
+#
+# After init, hosts are reachable as devops@22 via keys/devops_key.
 #
 # Usage:
-#   # AWS EC2
+#   # Managed cloud
 #   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aws
-#   # GCP VM
 #   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_gcp
+#   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aliyun
+#   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_tencent
+#   # Third-party VPS (Vultr / DigitalOcean / Hetzner ...)
+#   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_vps
 - name: Cloud VM bootstrap
   hosts: all
+  become: true
   vars:
     ansible_user: ubuntu
     ansible_port: 22
-    ansible_ssh_private_key_file: keys/devops.key
+    ansible_ssh_private_key_file: keys/devops_key
     hostname_mode: fqdn_short
     security_firewall_enabled: false
-    user_ssh_public_key: "{{ lookup('file', 'keys/devops.pub') }}"
+    user_ssh_public_key: "{{ lookup('file', playbook_dir ~ '/../keys/devops_key.pub') }}"
   roles:
     - hostname
     - audit
@@ -30,3 +38,4 @@
     - security
     - sysctl
     - user
+    - sshd

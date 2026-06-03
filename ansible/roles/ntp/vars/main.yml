@@ -24,6 +24,6 @@ ntp_config_files:
     Debian: /etc/ntp.conf
     RedHat: /etc/ntp.conf
 
-ntp_package: "{{ ntp_packages[ntp_service][ansible_os_family] }}"
-ntp_service_name: "{{ ntp_service_names[ntp_service][ansible_os_family] }}"
-ntp_config_file: "{{ ntp_config_files[ntp_service][ansible_os_family] }}"
+ntp_package: "{{ ntp_packages[ntp_service][ansible_facts.os_family] }}"
+ntp_service_name: "{{ ntp_service_names[ntp_service][ansible_facts.os_family] }}"
+ntp_config_file: "{{ ntp_config_files[ntp_service][ansible_facts.os_family] }}"

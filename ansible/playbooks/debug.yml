@@ -25,8 +25,8 @@
   hosts: "{{ target | default('localhost') }}"
   gather_facts: true
   vars:
-    # Demo vault value — same encrypted blob used in kvm-init / vps-init so
-    # one vault password verifies them all. Re-encrypt with:
+    # Demo vault value — same encrypted blob used in kvm-init so one vault
+    # password verifies them both. Re-encrypt with:
     #   ansible-vault encrypt_string 'your_secret' --name 'demo_vault_value'
     demo_vault_value: !vault |
       $ANSIBLE_VAULT;1.1;AES256
@@ -65,16 +65,16 @@
     - name: Show key host facts
       ansible.builtin.debug:
         msg:
-          default_ipv4: "{{ ansible_default_ipv4.address | default('n/a') }}"
-          fqdn: "{{ ansible_fqdn | default('n/a') }}"
-          hostname: "{{ ansible_hostname | default('n/a') }}"
-          os_family: "{{ ansible_os_family | default('n/a') }}"
-          distribution: "{{ ansible_distribution | default('n/a') }} {{ ansible_distribution_version | default('') }}"
-          architecture: "{{ ansible_architecture | default('n/a') }}"
-          kernel: "{{ ansible_kernel | default('n/a') }}"
-          memory_total_mb: "{{ ansible_memtotal_mb | default('n/a') }}"
-          cpu_cores: "{{ ansible_processor_cores | default('n/a') }}"
-          virtualization_type: "{{ ansible_virtualization_type | default('n/a') }}"
+          default_ipv4: "{{ ansible_facts.default_ipv4.address | default('n/a') }}"
+          fqdn: "{{ ansible_facts.fqdn | default('n/a') }}"
+          hostname: "{{ ansible_facts.hostname | default('n/a') }}"
+          os_family: "{{ ansible_facts.os_family | default('n/a') }}"
+          distribution: "{{ ansible_facts.distribution | default('n/a') }} {{ ansible_facts.distribution_version | default('') }}"
+          architecture: "{{ ansible_facts.architecture | default('n/a') }}"
+          kernel: "{{ ansible_facts.kernel | default('n/a') }}"
+          memory_total_mb: "{{ ansible_facts.memtotal_mb | default('n/a') }}"
+          cpu_cores: "{{ ansible_facts.processor_cores | default('n/a') }}"
+          virtualization_type: "{{ ansible_facts.virtualization_type | default('n/a') }}"
       tags: facts
 
     # ----- 5. Lookup plugin smoke test -----
@@ -84,8 +84,8 @@
           env_user: "{{ lookup('env', 'USER') }}"
           env_home: "{{ lookup('env', 'HOME') }}"
           devops_pub_head: >-
-            {{ lookup('file', inventory_dir ~ '/../keys/devops.pub', errors='ignore')
-               | default('keys/devops.pub missing', true) | truncate(60) }}
+            {{ lookup('file', inventory_dir ~ '/../keys/devops_key.pub', errors='ignore')
+               | default('keys/devops_key.pub missing', true) | truncate(60) }}
           pipe_uptime: "{{ lookup('pipe', 'uptime') | trim }}"
       tags: lookup
 
@@ -95,8 +95,8 @@
         msg:
           host_index: "{{ ansible_play_batch.index(inventory_hostname) }}"
           host_count: "{{ ansible_play_batch | length }}"
-          today_iso: "{{ ansible_date_time.iso8601 | default('n/a') }}"
-          today_epoch: "{{ ansible_date_time.epoch | default('n/a') }}"
+          today_iso: "{{ ansible_facts.date_time.iso8601 | default('n/a') }}"
+          today_epoch: "{{ ansible_facts.date_time.epoch | default('n/a') }}"
           random_int: "{{ 99999 | random }}"
           upper: "{{ ('hello' ~ ' ' ~ inventory_hostname) | upper }}"
       tags: template
@@ -125,5 +125,5 @@
     # Full environment variable dump (controller-side or remote-side).
     - name: Dump environment variables
       ansible.builtin.debug:
-        var: ansible_env
+        var: ansible_facts.env
       tags: [never, env]

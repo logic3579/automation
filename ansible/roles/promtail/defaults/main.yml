@@ -28,14 +28,14 @@ promtail_scrape_configs:
           - localhost
         labels:
           job: varlogs
-          host: "{{ ansible_hostname }}"
+          host: "{{ ansible_facts.hostname }}"
           __path__: /var/log/*.log
   - job_name: journal
     journal:
       max_age: 12h
       labels:
         job: systemd-journal
-        host: "{{ ansible_hostname }}"
+        host: "{{ ansible_facts.hostname }}"
     relabel_configs:
       - source_labels: ['__journal__systemd_unit']
         target_label: unit

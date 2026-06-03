@@ -8,7 +8,7 @@
 
 - name: Verify sing-box is listening
   ansible.builtin.wait_for:
-    host: "{{ ansible_default_ipv4['address'] }}"
+    host: "{{ ansible_facts.default_ipv4.address }}"
     port: "{{ sing_box_port }}"
     delay: 5
     timeout: 30

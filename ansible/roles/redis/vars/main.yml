@@ -8,7 +8,7 @@ redis_pkg_name: "redis-{{ redis_version }}.tar.gz"
 redis_src_path: /usr/local/src
 
 # Computed from inventory
-redis_host_ip: "{{ ansible_default_ipv4['address'] }}"
+redis_host_ip: "{{ ansible_facts.default_ipv4.address }}"
 redis_cluster_init_info: >-
   {%- for index in range(ansible_play_batch | length) -%}
   {{ ansible_play_batch[index] }}:{{ redis_cluster_ports[index * 2] }}

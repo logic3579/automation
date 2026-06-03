@@ -26,6 +26,9 @@
     key: "{{ user_ssh_public_key }}"
     state: present
     exclusive: true
+    # Explicit path avoids ~user expansion, which fails in --check before the
+    # user task has actually created the account on the remote host.
+    path: "/home/{{ user_name }}/.ssh/authorized_keys"
   when: user_ssh_public_key | length > 0
 
 - name: Configure passwordless sudo

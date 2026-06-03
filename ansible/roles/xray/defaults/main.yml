@@ -4,7 +4,7 @@
 #   vless-reality - VLESS + REALITY (TLS fingerprint masquerade)
 xray_protocol: vmess
 
-# Inbound listen port (firewall pre-opens 443 in vps-init.yml)
+# Inbound listen port (provider security group / VPS network ACL must allow 443)
 xray_port: 443
 
 # Client UUID — vault-encrypt before use:

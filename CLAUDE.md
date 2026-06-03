@@ -10,12 +10,12 @@ Infrastructure automation repository containing **Ansible** roles/playbooks and 
 
 - `ansible/` — Ansible automation (primary tool), deployed standalone to `~/ansible/` on management machines
   - `inventories/` — Two inventory files, used at different lifecycle stages.
-    - **`init.ini`** (bootstrap) targets broad IP ranges by infra type: `kvm` self-hosted, `cloud_aws` / `cloud_gcp` / `cloud_vps` cloud, all rolled up under `cloud:children`. Used by `kvm-init.yml` / `cloud-init.yml` / `vps-init.yml`.
+    - **`init.ini`** (bootstrap) targets broad IP ranges by infra type: `kvm` self-hosted, `cloud_aws` / `cloud_gcp` / `cloud_aliyun` / `cloud_tencent` managed cloud and `cloud_vps` third-party VPS, all rolled up under `cloud:children`. Used by `kvm-init.yml` / `cloud-init.yml`.
     - **`hosts.ini`** (service deploy, default in `ansible.cfg`) lists only the specific hosts each service runs on. Each leaf group is named `<service>_<topology>_<infra>` (e.g. `kafka_cluster_kvm`, `rocketmq_2m2s_kvm`, `rocketmq_failover_kvm`); roll-ups `kvm:children` and `cloud:children` (currently containing `cloud_vps` for xray / sing-box hosts) let you target an entire infra type. Service playbooks default to this inventory — no `-i` flag needed.
-    - `group_vars/` holds per-group variables shared by both inventories: `all`, `kvm`, `cloud`, `cloud_aws`, `cloud_gcp`, `cloud_vps`.
-  - `playbooks/` — Bootstrap (`kvm-init.yml`, `cloud-init.yml`, `vps-init.yml`), service (`kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml`, `docker.yml`, `xray.yml`, `sing-box.yml`), and developer-utility (`debug.yml`) entry points.
+    - `group_vars/` holds per-group variables shared by both inventories: `all`, `kvm`, `cloud`, `cloud_aws`, `cloud_gcp`. `cloud_vps` and other cloud subgroups inherit from `cloud.yml` via the `cloud:children` hierarchy.
+  - `playbooks/` — Bootstrap (`kvm-init.yml`, `cloud-init.yml`), service (`kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml`, `docker.yml`, `xray.yml`, `sing-box.yml`), and developer-utility (`debug.yml`) entry points.
   - `roles/` — Standard Ansible role layout (`tasks/`, `handlers/`, `defaults/`, `vars/`, `templates/`, `files/`)
-  - `keys/` — Single `devops.key/devops.pub` key pair authorized for the `devops` user on all managed hosts
+  - `keys/` — Single `devops_key/devops_key.pub` key pair authorized for the `devops` user on all managed hosts
   - `ansible.cfg` — Paths resolved relative to the cfg file (`inventories/hosts.ini`, `roles/`); user-shared state lives under `~/.ansible/` (`cache/`, `ansible.log`). Smart gathering, `result_format=yaml`, profile_tasks + timer callbacks, force_handlers, pipelined SSH.
   - `.gitignore` — Per-directory gitignore (vault files, retry files, runtime dirs, all of `keys/` except `keys/README.md`)
 - `saltproject/` — Salt states and pillars
@@ -41,14 +41,14 @@ ansible-playbook playbooks/redis.yml --limit redis_cluster_kvm -e "redis_cluster
 ansible-playbook playbooks/rocketmq.yml --limit rocketmq_failover_kvm -e "rocketmq_mode=failover"
 ansible-playbook playbooks/docker.yml --limit kvm
 
-# Reverse-proxy / VPS-app deployment (after vps-init.yml) — target hosts.ini's cloud_vps
+# Reverse-proxy / VPS-app deployment (after cloud-init.yml) — target hosts.ini's cloud_vps
 ansible-playbook playbooks/xray.yml --limit cloud_vps --vault-id pwd.vault
 ansible-playbook playbooks/sing-box.yml --limit cloud_vps --vault-id pwd.vault -e "sing_box_protocol=vless-reality"
 
-# Bootstrap (uses init.ini's broad IP ranges; vault password file holds the shared root password)
-ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml --limit kvm --vault-id pwd.vault
-ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aws
-ansible-playbook -i inventories/init.ini playbooks/vps-init.yml --limit cloud_vps --vault-id pwd.vault
+# Bootstrap (uses init.ini's broad IP ranges)
+ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml --limit kvm --vault-id pwd.vault   # KVM: root password from vault
+ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aws                # Managed cloud (AWS / GCP / Aliyun / Tencent): ubuntu + key
+ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_vps                # Third-party VPS (Vultr / DigitalOcean / Hetzner ...): ubuntu + key
 
 # Dry run (check mode)
 ansible-playbook playbooks/nginx.yml -C
@@ -185,18 +185,18 @@ roles/<name>/
 ## Architecture Notes
 
 - **Inventory model**: Two files for two lifecycle stages.
-  - `inventories/init.ini` (bootstrap) groups hosts by infrastructure type — `kvm` self-hosted, `cloud_aws`/`cloud_gcp`/`cloud_vps` cloud, all aggregated under `cloud:children`. Only the three `*-init.yml` playbooks reference it (`-i inventories/init.ini`).
+  - `inventories/init.ini` (bootstrap) groups hosts by infrastructure type — `kvm` self-hosted plus `cloud_aws` / `cloud_gcp` / `cloud_aliyun` / `cloud_tencent` / `cloud_vps`, all aggregated under `cloud:children`. Only the two `*-init.yml` playbooks reference it (`-i inventories/init.ini`).
   - `inventories/hosts.ini` (service deploy, default in `ansible.cfg`) lists specific hosts per service. Leaf groups follow `<service>_<topology>_<infra>` (`kafka_cluster_kvm`, `rocketmq_2m2s_kvm`, `rocketmq_failover_kvm`, etc.). Roll-up parent groups via `:children` — `[kvm:children]` covers every KVM service host, `[cloud:children]` currently includes `cloud_vps` (xray / sing-box deployment targets). Service playbooks omit `-i` entirely.
-- **Connection model**: Two-tier — `group_vars/all.yml` defines the steady-state default (`devops@2233` + `keys/devops.key`); per-group overrides set the right port (`kvm.yml`: 2233; `cloud.yml`/`cloud_vps.yml`: 22) and provider-specific NTP servers. Init playbooks override connection params in their own `vars:` block to bootstrap from the pre-init account.
+- **Connection model**: Two-tier — `group_vars/all.yml` defines the steady-state default (`devops@2233` + `keys/devops_key`); per-group overrides set the right port (`kvm.yml`: 2233; `cloud.yml`: 22) and the NTP source (cloud uses UTC + public pool, inherited by every `cloud:children` subgroup). Init playbooks override connection params in their own `vars:` block to bootstrap from the pre-init account.
 - **KVM bootstrap** (`playbooks/kvm-init.yml`): Bootstrap as `root@22` with vault-encrypted password. Runs roles in order: hostname → audit → ntp → security → sysctl → user → sshd. Sets `sshd_port: 2233` and `security_allowed_tcp_ports: [2233]` at playbook level to keep firewall and SSH port in sync. The `sshd` role runs last as the point of no return (changes port, disables password auth). After init, the host is reachable as `devops@2233` via key.
-- **Cloud bootstrap** (`playbooks/cloud-init.yml`): Bootstrap as the cloud image default user (`ubuntu`) authenticated via `keys/devops.key` — requires `devops.pub` pre-injected at VM creation time. Runs hostname (in `fqdn_short` mode, preserves cloud-assigned FQDN) → audit → ntp → security (firewall disabled, cloud security groups handle it) → sysctl → user. No `sshd` role: SSH stays on 22. After init, the host is reachable as `devops@22` via key.
-- **VPS bootstrap** (`playbooks/vps-init.yml`): Third-party VPS path. Bootstrap as `root@22` with a vault-encrypted **shared** password (set the same root password at provisioning time on every VPS). Same role order as `kvm-init.yml` but with VPS-tuned defaults: `sshd_port: 22` (no port shift), `security_allowed_tcp_ports: [22, 443]` (443 pre-opened for xray/sing-box), `hostname_mode: fqdn_short` to preserve provider-assigned names. UTC timezone + public NTP pool come from `group_vars/cloud_vps.yml`.
+- **Cloud / VPS bootstrap** (`playbooks/cloud-init.yml`): Single bootstrap path for managed cloud (AWS / GCP / Aliyun / Tencent) and third-party VPS (Vultr / DigitalOcean / Hetzner ...) — both require the image to ship with the default user (`ubuntu`) plus `devops_key.pub` pre-injected at VM creation time. Connects via `keys/devops_key` with `become: true` for privilege escalation. Runs hostname (in `fqdn_short` mode, preserves cloud-assigned FQDN) → audit → ntp → security (firewall disabled, provider security groups / network ACLs handle ingress) → sysctl → user → sshd. The `sshd` role hardens SSH (`PasswordAuthentication no`, `PermitRootLogin prohibit-password`, key-only auth) as defense in depth — especially relevant for VPS hosts that lack provider-managed firewalls. SSH stays on port 22. After init, the host is reachable as `devops@22` via key.
 - **Cluster mode toggles**:
   - **Kafka** — `kafka_cluster_enabled` (`"no"` default → replication=1 for single-broker; `"yes"` → replication=3 for 3-node KRaft). Config path is `config/server.properties` (Kafka 4.x consolidated the legacy `config/kraft/` subdir).
   - **Redis** — `redis_cluster_enabled` (`"no"` default → single port 6379; `"yes"` → 6 instances on ports 7001-7006 across 3 hosts with `--cluster-replicas 1` for 3M3S).
   - **RocketMQ** — `rocketmq_mode` (`standalone` | `2m-2s-sync` | `failover`). 2m-2s-sync cross-pairs slaves: slave on host_i protects master on host_(i+1)%N. Failover uses DLedger with `dLegerPeers` derived from `ansible_play_batch`.
-- **Multi-distro role pattern** (used by `docker` and `sing-box`): tasks/main.yml first runs `include_vars: "{{ ansible_os_family }}.yml"` to load `vars/Debian.yml` or `vars/RedHat.yml` (package repo URL, GPG key path, etc.); then `install.yml` includes `install-debian.yml` or `install-redhat.yml` via `when: ansible_os_family == "<family>"`. Shared package list lives in `vars/main.yml`. `xray` bypasses this — its upstream `install-release.sh` script handles distro detection itself.
-- **Credentials**: All passwords/secrets use Ansible Vault (`!vault |` encrypted strings). Never store plaintext credentials. Bootstrap (`kvm-init`, `vps-init`) and protocol secrets (`xray_uuid`, `xray_reality_private_key`, `sing_box_*`, `redis_password`) all reference vault-encrypted defaults that must be populated before use. Decrypt with `--vault-id <path>` at runtime — note `--ask-pass` is for SSH connection password, **not** vault.
+- **Multi-distro role pattern** (used by `docker` and `sing-box`): tasks/main.yml first runs `include_vars: "{{ ansible_facts.os_family }}.yml"` to load `vars/Debian.yml` or `vars/RedHat.yml` (package repo URL, GPG key path, etc.); then `install.yml` includes `install-debian.yml` or `install-redhat.yml` via `when: ansible_facts.os_family == "<family>"`. Shared package list lives in `vars/main.yml`. `xray` bypasses this — its upstream `install-release.sh` script handles distro detection itself.
+- **Fact access**: Use `ansible_facts.<name>` (e.g. `ansible_facts.os_family`, `ansible_facts.default_ipv4.address`) rather than the top-level `ansible_<name>` form — the latter is deprecated in ansible-core 2.20 and removed in 2.24 (`INJECT_FACTS_AS_VARS`). Magic vars (`ansible_play_batch`, `inventory_hostname`, `ansible_managed`, connection params like `ansible_user` / `ansible_port`) are not facts and stay as-is.
+- **Credentials**: All passwords/secrets use Ansible Vault (`!vault |` encrypted strings). Never store plaintext credentials. The KVM bootstrap (`kvm-init`) root password and protocol secrets (`xray_uuid`, `xray_reality_private_key`, `sing_box_*`, `redis_password`) all reference vault-encrypted defaults that must be populated before use. Decrypt with `--vault-id <path>` at runtime — note `--ask-pass` is for SSH connection password, **not** vault. `cloud-init.yml` needs no vault since it authenticates via `keys/devops_key`.
 - **Template marker**: `ansible_managed` is defined as a regular variable in `group_vars/all.yml` (using template magic vars `template_path`/`template_uid`/`template_host`). The deprecated `ansible.cfg` `DEFAULT_MANAGED_STR` setting was removed (slated for removal in ansible-core 2.23).
 - **Existing roles**: audit, categraf, docker, fact, hostname, kafka, nginx, ntp, promtail, redis, rocketmq, security, sing-box, sshd, sysctl, user, xray.
 - **Salt states** use the `map.jinja` pattern for cross-platform support (Debian/RedHat).

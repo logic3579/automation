@@ -1,6 +1,0 @@
----
-- name: Test fact role
-  hosts: localhost
-  remote_user: root
-  roles:
-    - fact

@@ -1,6 +1,0 @@
----
-- name: Test sysctl role
-  hosts: localhost
-  remote_user: root
-  roles:
-    - sysctl

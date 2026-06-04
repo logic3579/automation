@@ -1,6 +1,0 @@
----
-- name: Test redis role
-  hosts: localhost
-  remote_user: root
-  roles:
-    - redis

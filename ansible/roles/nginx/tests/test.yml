@@ -1,6 +1,0 @@
----
-- name: Test nginx role
-  hosts: localhost
-  remote_user: root
-  roles:
-    - nginx

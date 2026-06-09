@@ -7,14 +7,6 @@
     group: root
     mode: "0755"
 
-- name: Ensure sing-box log directory exists
-  ansible.builtin.file:
-    path: "{{ sing_box_log_dir }}"
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
-
 - name: Deploy sing-box configuration
   ansible.builtin.template:
     src: config.json.j2

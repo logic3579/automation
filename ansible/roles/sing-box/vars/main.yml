@@ -3,4 +3,3 @@
 
 sing_box_config_dir: /etc/sing-box
 sing_box_config_file: "{{ sing_box_config_dir }}/config.json"
-sing_box_log_dir: /var/log/sing-box

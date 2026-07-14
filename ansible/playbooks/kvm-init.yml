@@ -1,14 +1,16 @@
 ---
 # Self-hosted KVM/bare-metal initialization playbook.
 #
-# Bootstrap connection: root via password (KVM ships with root@22 + password).
-# Replace the vault placeholder below with the actual encrypted root password:
-#   ansible-vault encrypt_string 'your_root_password' --name 'ansible_ssh_pass' --vault-id pwd.vault
+# Bootstrap connection is fixed at root@22. Replace the vault placeholder below
+# with the actual encrypted root password:
+#   uv run ansible-vault encrypt_string 'your_root_password' \
+#     --name 'ansible_ssh_pass' --vault-id pwd.vault
 #
 # Usage:
-#   ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml --limit kvm --vault-id pwd.vault
+#   uv run ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml \
+#     --vault-id pwd.vault
 - name: KVM bootstrap
-  hosts: all
+  hosts: kvm
   vars:
     ansible_user: root
     ansible_port: 22

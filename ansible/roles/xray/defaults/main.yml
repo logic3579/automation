@@ -8,8 +8,8 @@ xray_protocol: vmess
 xray_port: 443
 
 # Client UUID — vault-encrypt before use:
-#   ansible-vault encrypt_string 'your_uuid' --name 'xray_uuid' --ask-vault-pass
-#   ansible-vault encrypt_string 'your_uuid' --name 'xray_uuid' --vault-id pwd.vault
+#   uv run ansible-vault encrypt_string 'your_uuid' --name 'xray_uuid' --ask-vault-pass
+#   uv run ansible-vault encrypt_string 'your_uuid' --name 'xray_uuid' --vault-id pwd.vault
 xray_uuid: !vault |
   $ANSIBLE_VAULT;1.1;AES256
   66383165393934363538333662376535346564393735313562653961353339333661646137303939
@@ -28,7 +28,7 @@ xray_uuid: !vault |
 xray_reality_dest: "www.microsoft.com:443"
 xray_reality_server_names:
   - www.microsoft.com
-#   ansible-vault encrypt_string 'your_reality_private_key' --name 'xray_reality_private_key' --vault-id pwd.vault
+#   uv run ansible-vault encrypt_string 'your_reality_private_key' --name 'xray_reality_private_key' --vault-id pwd.vault
 xray_reality_private_key: !vault |
   $ANSIBLE_VAULT;1.1;AES256
   34383734343561326637643034616139346336643165336461643766383934393163396133323633

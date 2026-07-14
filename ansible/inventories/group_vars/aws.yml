@@ -1,0 +1,10 @@
+# AWS steady-state connection and privilege escalation.
+ansible_user: devops
+ansible_port: 22
+ansible_ssh_private_key_file: keys/devops_key
+ansible_become_method: sudo
+ansible_become_user: root
+
+ntp_timezone: UTC
+ntp_servers:
+  - 169.254.169.123

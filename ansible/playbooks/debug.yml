@@ -4,30 +4,29 @@
 # so no SSH or remote credentials are needed.
 #
 # Run everything (except heavy opt-in dumps):
-#   ansible-playbook playbooks/debug.yml --ask-vault-pass
+#   uv run ansible-playbook playbooks/debug.yml --ask-vault-pass
 #
 # Target a remote group/host instead of localhost:
-#   ansible-playbook playbooks/debug.yml -e target=kafka_cluster_kvm
+#   uv run ansible-playbook playbooks/debug.yml -e target=kafka_cluster_kvm
 #
 # Run a single section via tags:
-#   ansible-playbook playbooks/debug.yml --tags ping
-#   ansible-playbook playbooks/debug.yml --tags vault --ask-vault-pass
-#   ansible-playbook playbooks/debug.yml --tags inventory
-#   ansible-playbook playbooks/debug.yml --tags facts
-#   ansible-playbook playbooks/debug.yml --tags lookup
-#   ansible-playbook playbooks/debug.yml --tags template
-#   ansible-playbook playbooks/debug.yml --tags shell
+#   uv run ansible-playbook playbooks/debug.yml --tags ping
+#   uv run ansible-playbook playbooks/debug.yml --tags vault --ask-vault-pass
+#   uv run ansible-playbook playbooks/debug.yml --tags inventory
+#   uv run ansible-playbook playbooks/debug.yml --tags facts
+#   uv run ansible-playbook playbooks/debug.yml --tags lookup
+#   uv run ansible-playbook playbooks/debug.yml --tags template
+#   uv run ansible-playbook playbooks/debug.yml --tags shell
 #
 # Opt-in heavy sections (excluded from default run via `never` tag):
-#   ansible-playbook playbooks/debug.yml --tags facts_full   # full ansible_facts dump
-#   ansible-playbook playbooks/debug.yml --tags env          # full env vars
+#   uv run ansible-playbook playbooks/debug.yml --tags facts_full   # full ansible_facts dump
+#   uv run ansible-playbook playbooks/debug.yml --tags env          # full env vars
 - name: Ansible debug toolkit
   hosts: "{{ target | default('localhost') }}"
   gather_facts: true
   vars:
-    # Demo vault value — same encrypted blob used in kvm-init so one vault
-    # password verifies them both. Re-encrypt with:
-    #   ansible-vault encrypt_string 'your_secret' --name 'demo_vault_value'
+    # Demo vault value uses the same placeholder as kvm-init. Re-encrypt with:
+    #   uv run ansible-vault encrypt_string 'your_secret' --name 'demo_vault_value'
     demo_vault_value: !vault |
       $ANSIBLE_VAULT;1.1;AES256
       31626630386363616332343237613935353564623839663239663733643933323436336432376535

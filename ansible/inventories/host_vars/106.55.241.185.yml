@@ -1,5 +1,5 @@
 ---
-# Host-specific overrides for cloud_tencent (106.55.241.185).
+# Host-specific overrides for tencent (106.55.241.185).
 #
 # Use case: VMess inbound for overseas → China reverse VPN. No GFW concern on
 # this direction, so plain VMess over TCP is sufficient (no TLS / no REALITY).
@@ -7,14 +7,14 @@
 # overseas client side before applying.
 #
 # Deploy:
-#   ansible-playbook playbooks/xray.yml --limit cloud_tencent --vault-id pwd.vault
+#   uv run ansible-playbook playbooks/xray.yml --limit tencent --vault-id pwd.vault
 
 xray_protocol: vmess
 xray_port: 443
 
 # Generate + encrypt the UUID, then paste the !vault block here:
 #   UUID=$(uuidgen) && echo "$UUID"
-#   ansible-vault encrypt_string "$UUID" --name 'xray_uuid' [--vault-id pwd.vault]
+#   uv run ansible-vault encrypt_string "$UUID" --name 'xray_uuid' [--vault-id pwd.vault]
 xray_uuid: !vault |
   $ANSIBLE_VAULT;1.1;AES256
   39663939393336376335353538373566383533633363616438623030326432336531636531356639

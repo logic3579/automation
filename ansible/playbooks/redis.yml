@@ -1,15 +1,13 @@
 ---
 # Usage:
 # standalone (single instance, port 6379)
-#   ansible-playbook playbooks/redis.yml --limit redis_standalone_kvm
+#   uv run ansible-playbook playbooks/redis.yml --limit redis_standalone_kvm
 # 3M3S cluster (3 hosts x 2 instances each on ports 7001-7006, cluster-replicas 1)
-#   ansible-playbook playbooks/redis.yml --limit redis_cluster_kvm -e "redis_cluster_enabled=yes"
+#   uv run ansible-playbook playbooks/redis.yml --limit redis_cluster_kvm -e "redis_cluster_enabled=yes"
 
 - name: Deploy Redis
   hosts: all
-  remote_user: root
   become: true
-  become_method: ansible.builtin.su
   serial: 1
   roles:
     - redis

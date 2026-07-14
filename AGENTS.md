@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository contains infrastructure automation for two independent stacks. `ansible/` is the primary Ansible workspace: `playbooks/` holds bootstrap and service entry points, `roles/` uses the standard role layout, `inventories/` contains `init.ini` for bootstrap and `hosts.ini` for service deployment, and `group_vars/` stores shared variables. Its Python control environment is declared by `pyproject.toml`, `.python-version`, and `uv.lock`; Galaxy collections remain declared in `requirements.yml`. `saltproject/` contains Salt content: `base/` for states and formulas, `pillar/` for pillar data, plus `master.conf` and `minion.conf`.
+This repository contains infrastructure automation for two independent stacks. `ansible/` is the primary Ansible workspace: `playbooks/` holds bootstrap and service entry points, `roles/` uses the standard role layout, and `inventories/` contains the explicit bootstrap source `init.ini` plus steady-state provider files (`kvm.ini`, `aws.ini`, `gcp.ini`, `aliyun.ini`, `tencent.ini`, and `vultr.ini`). Matching `group_vars/` files own each provider's connection and privilege-escalation configuration; there is no shared `cloud` group. The Python control environment is declared by `pyproject.toml`, `.python-version`, and `uv.lock`; Galaxy collections remain declared in `requirements.yml`. `saltproject/` contains Salt content: `base/` for states and formulas, `pillar/` for pillar data, plus `master.conf` and `minion.conf`.
 
 ## Build, Test, and Development Commands
 
@@ -19,6 +19,8 @@ uv run ansible-lint --offline playbooks/ roles/
 ```
 
 `uv run` is the default for documentation and automation. In an interactive shell, `source .venv/bin/activate` allows the same commands to run without the prefix until `deactivate`. Without `-p`, `ansible-galaxy` installs collections under `~/.ansible/collections` by default.
+
+The default inventory is the provider-file list configured in `ansible.cfg`; never add `init.ini` to it. Bootstrap commands must pass `-i inventories/init.ini`. `kvm-init.yml` targets `kvm`, fixes its bootstrap connection at `root@22`, stores the password as an `ansible_ssh_pass: !vault` value, and requires `--vault-id pwd.vault`; provider bootstrap overrides the image's initial connection through extra vars, for example `-e "ansible_user=ubuntu ansible_port=22"`. Service playbooks set `become: true` when required but must not hardcode `remote_user` or `become_method`; inventory variables decide both.
 
 Use check mode (`-C`) before changing remote hosts. For Salt, validate connectivity and state application with `salt '*' test.ping`, `salt '*' state.apply`, or `salt '*' state.apply <state_name>`.
 

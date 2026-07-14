@@ -1,15 +1,13 @@
 ---
 # Usage:
 # standalone (single broker, replication factor = 1)
-#   ansible-playbook playbooks/kafka.yml --limit kafka_standalone_kvm
+#   uv run ansible-playbook playbooks/kafka.yml --limit kafka_standalone_kvm
 # 3-node cluster (KRaft quorum, replication factor = 3)
-#   ansible-playbook playbooks/kafka.yml --limit kafka_cluster_kvm -e "kafka_cluster_enabled=yes"
+#   uv run ansible-playbook playbooks/kafka.yml --limit kafka_cluster_kvm -e "kafka_cluster_enabled=yes"
 
 - name: Deploy Kafka
   hosts: all
-  remote_user: root
   become: true
-  become_method: ansible.builtin.su
   serial: 1
   roles:
     - kafka

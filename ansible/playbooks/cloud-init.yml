@@ -1,10 +1,9 @@
 ---
 # Cloud / third-party VPS initialization playbook.
 #
-# Bootstrap connection: the cloud image's default user (ubuntu/ec2-user) with
-# devops_key.pub pre-injected at VM creation time, authenticated via devops_key.
-# Same flow applies to third-party VPS providers (Vultr, DigitalOcean, Hetzner)
-# as long as they ship with ubuntu + the public key pre-injected.
+# Bootstrap connection: override the steady-state inventory user with the cloud
+# image's initial user (ubuntu/ec2-user/etc.) through extra vars. The image must
+# have devops_key.pub pre-injected and is authenticated via devops_key.
 #
 # The host firewall stays disabled — cloud security groups / VPC firewall rules
 # (or the VPS provider's own network ACL) handle ingress. The sshd role still
@@ -13,21 +12,15 @@
 #
 # After init, hosts are reachable as devops@22 via keys/devops_key.
 #
-# Usage:
-#   # Managed cloud
-#   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aws
-#   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_gcp
-#   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aliyun
-#   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_tencent
-#   # Third-party VPS (Vultr / DigitalOcean / Hetzner ...)
-#   ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_vps
+# Usage (replace ubuntu with the image's actual initial user):
+#   uv run ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml \
+#     --limit aws -e "ansible_user=ubuntu ansible_port=22"
+#
+# Supported provider groups: aws, gcp, aliyun, tencent, vultr.
 - name: Cloud VM bootstrap
   hosts: all
   become: true
   vars:
-    ansible_user: ubuntu
-    ansible_port: 22
-    ansible_ssh_private_key_file: keys/devops_key
     hostname_mode: fqdn_short
     security_firewall_enabled: false
     user_ssh_public_key: "{{ lookup('file', playbook_dir ~ '/../keys/devops_key.pub') }}"

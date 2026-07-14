@@ -1,17 +1,15 @@
 ---
 # Usage:
 # standalone (1 host: 1 namesrv + 1 broker)
-#   ansible-playbook playbooks/rocketmq.yml --limit rocketmq_standalone_kvm
+#   uv run ansible-playbook playbooks/rocketmq.yml --limit rocketmq_standalone_kvm
 # 2m-2s-sync (2 hosts: each runs namesrv + 1 master + 1 slave, cross-paired)
-#   ansible-playbook playbooks/rocketmq.yml --limit rocketmq_2m2s_kvm -e "rocketmq_mode=2m-2s-sync"
+#   uv run ansible-playbook playbooks/rocketmq.yml --limit rocketmq_2m2s_kvm -e "rocketmq_mode=2m-2s-sync"
 # failover / DLedger (>=3 hosts for Raft quorum: each runs namesrv + 1 DLedger broker)
-#   ansible-playbook playbooks/rocketmq.yml --limit rocketmq_failover_kvm -e "rocketmq_mode=failover"
+#   uv run ansible-playbook playbooks/rocketmq.yml --limit rocketmq_failover_kvm -e "rocketmq_mode=failover"
 
 - name: Deploy RocketMQ
   hosts: all
-  remote_user: root
   become: true
-  become_method: ansible.builtin.su
   serial: 1
   roles:
     - rocketmq

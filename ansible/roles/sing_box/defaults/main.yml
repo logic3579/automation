@@ -8,7 +8,7 @@ sing_box_protocol: vmess
 sing_box_port: 443
 
 # Client UUID — vault-encrypt before use:
-#   ansible-vault encrypt_string 'your_uuid' --name 'sing_box_uuid' --vault-id pwd.vault
+#   uv run ansible-vault encrypt_string 'your_uuid' --name 'sing_box_uuid' --vault-id pwd.vault
 sing_box_uuid: !vault |
   $ANSIBLE_VAULT;1.1;AES256
   32613963383536656566323439333837653639643966383864376362336362626137366662313863

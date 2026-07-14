@@ -115,11 +115,26 @@ ssh-copy-id -i keys/devops_key.pub root@192.168.1.3
 
 ### Inventory
 
-```bash
-# Inventories
-inventories/init.ini      # For initializing new servers
-inventories/hosts.ini     # Production hosts (default in ansible.cfg)
+Steady-state hosts are split by provider. `ansible.cfg` loads these files by
+default, so routine commands do not need `-i`:
+
+```text
+inventories/kvm.ini
+inventories/aws.ini
+inventories/gcp.ini
+inventories/aliyun.ini
+inventories/tencent.ini
+inventories/vultr.ini
 ```
+
+`inventories/init.ini` is reserved for bootstrap targets and must always be
+selected explicitly with `-i inventories/init.ini`. It uses the same provider
+group names (`kvm`, `aws`, `gcp`, `aliyun`, `tencent`, and `vultr`) but is never
+part of the default inventory.
+
+Connection and privilege-escalation settings belong to matching files under
+`inventories/group_vars/`. Service playbooks declare only whether they need
+`become`; they do not select the SSH user or become method.
 
 ### Ad-Hoc Commands
 
@@ -127,8 +142,9 @@ inventories/hosts.ini     # Production hosts (default in ansible.cfg)
 # Ping using default inventory
 uv run ansible all -m ping
 
-# Ping specific hosts with a special inventory
-uv run ansible -i inventories/init.ini 10.0.10.12,10.0.10.13 -m ping
+# Test an AWS bootstrap target as the image's initial user
+uv run ansible -i inventories/init.ini aws -m ping \
+  -e "ansible_user=ubuntu ansible_port=22"
 ```
 
 ### Playbook Execution
@@ -137,11 +153,13 @@ uv run ansible -i inventories/init.ini 10.0.10.12,10.0.10.13 -m ping
 # Run a playbook with default inventory
 uv run ansible-playbook playbooks/nginx.yml
 
-# Run with specific inventory and host override
-uv run ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml -e "hosts_var=10.0.10.12,10.0.10.13"
+# Bootstrap KVM; root@22 and its encrypted password are defined in the playbook
+uv run ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml \
+  --vault-id pwd.vault
 
-# Override remote user and become method
-uv run ansible-playbook playbooks/redis.yml -u root --become --become-method su
+# Bootstrap an AWS Ubuntu image; replace ubuntu for other image families
+uv run ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml \
+  --limit aws -e "ansible_user=ubuntu ansible_port=22"
 
 # List tasks and tags without executing
 uv run ansible-playbook playbooks/nginx.yml --list-tasks --list-tags
@@ -163,9 +181,8 @@ uv run ansible-playbook playbooks/nginx.yml --start-at-task "your task name"
 ```yaml
 - name: Example Playbook
   hosts: "{{ hosts_var }}"
-  # remote_user: root
   # become: true
-  # become_method: su
+  # Connection user and become method come from inventory group_vars.
   # ignore_errors: false
   gather_facts: true
   # tags: ["foo", "bar"]
@@ -314,8 +331,8 @@ uv run ansible-playbook playbooks/nginx.yml --start-at-task "your task name"
 # Encrypt a string
 uv run ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
 
-# Run playbook with vault password prompt
-uv run ansible-playbook playbooks/kvm-init.yml --ask-vault-pass
+# Run the vault debug section with a password prompt
+uv run ansible-playbook playbooks/debug.yml --tags vault --ask-vault-pass
 ```
 
 Using vault-encrypted variables in playbooks:

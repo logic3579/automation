@@ -4,7 +4,6 @@
     path: "{{ role_path }}/files/{{ rocketmq_pkg_name }}"
   delegate_to: localhost
   become: false
-  remote_user: devops
   register: rocketmq_pkg_result
   run_once: true
 
@@ -16,7 +15,6 @@
     validate_certs: true
   delegate_to: localhost
   become: false
-  remote_user: devops
   run_once: true
   when: not rocketmq_pkg_result.stat.exists
 

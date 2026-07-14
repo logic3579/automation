@@ -1,11 +1,9 @@
 ---
 # Usage:
-#   ansible-playbook playbooks/nginx.yml --limit nginx_standalone_kvm
+#   uv run ansible-playbook playbooks/nginx.yml --limit nginx_standalone_kvm
 
 - name: Deploy Nginx
   hosts: all
-  remote_user: root
   become: true
-  become_method: ansible.builtin.su
   roles:
     - { role: nginx }

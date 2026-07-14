@@ -135,6 +135,37 @@ uv run ansible-playbook -i inventories/vultr.ini playbooks/xray.yml \
   --limit vultr --vault-id pwd.vault
 ```
 
+The `proj-dev` AWS account uses an explicit dynamic inventory source. It
+discovers running EC2 instances in `eu-central-1` without requiring tags and
+uses the instance ID as both `inventory_hostname` and `ansible_host`. AWS host
+variables use the `aws_` prefix, for example `aws_instance_id` and
+`aws_ec2_tags`, to avoid Ansible reserved variable names:
+
+```bash
+# Install the amazon.aws collection after uv sync
+uv run ansible-galaxy collection install -r requirements.yml \
+  -p ~/.ansible/collections --force
+
+# Inspect discovery without connecting to or changing an instance
+uv run ansible-inventory -i inventories/aws_proj_dev.aws_ec2.yml --graph
+uv run ansible-inventory -i inventories/aws_proj_dev.aws_ec2.yml --list
+uv run ansible -i inventories/aws_proj_dev.aws_ec2.yml \
+  aws_proj_dev --list-hosts
+```
+
+This source is not part of the default inventory. Discovery requires the local
+AWS profile `proj-dev` and permission to call `ec2:DescribeInstances`.
+`inventories/group_vars/aws_proj_dev.yml` connects as `ssm-user` by sending the
+controller's `keys/aws_ssm_key.pub` through EC2 Instance Connect and tunneling SSH
+through Session Manager. Validate one instance before targeting the group:
+
+```bash
+uv run ansible -i inventories/aws_proj_dev.aws_ec2.yml \
+  i-xxxxxxxxxxxxxxxxx -m ansible.builtin.ping
+uv run ansible -i inventories/aws_proj_dev.aws_ec2.yml \
+  i-xxxxxxxxxxxxxxxxx -m ansible.builtin.setup
+```
+
 `inventories/init.ini` is reserved for bootstrap targets and must always be
 selected explicitly with `-i inventories/init.ini`. It uses the same provider
 group names (`kvm`, `aws`, `gcp`, `aliyun`, `tencent`, and `vultr`) but is never

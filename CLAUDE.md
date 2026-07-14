@@ -11,13 +11,13 @@ Infrastructure automation repository containing **Ansible** roles/playbooks and 
 - `ansible/` — Ansible automation (primary tool), deployed standalone to `~/ansible/` on management machines
   - `inventories/` — Flat inventory sources split by provider.
     - **`init.ini`** is the explicit bootstrap source with `kvm`, `aws`, `gcp`, `aliyun`, `tencent`, and `vultr` groups. It is never part of the default inventory. `kvm-init.yml` fixes bootstrap at `root@22`; provider bootstrap overrides the image's initial connection through extra vars.
-    - **`kvm.ini`, `aws.ini`, `gcp.ini`, `aliyun.ini`, `tencent.ini`, `vultr.ini`** are steady-state sources. Only `kvm.ini` is the `ansible.cfg` default; every cloud provider source must be selected explicitly with `-i`. Service topology groups follow `<service>_<topology>_<provider>` and provider parent groups aggregate their own children. There is no shared `cloud` group.
-    - `group_vars/` has one matching file per provider. Each provider owns its connection, become method, timezone, and NTP configuration; `all.yml` contains only genuine global values.
+    - **`kvm.ini`, `aws.ini`, `gcp.ini`, `aliyun.ini`, `tencent.ini`, `vultr.ini`** are steady-state sources. Only `kvm.ini` is the `ansible.cfg` default; every cloud provider source must be selected explicitly with `-i`. `aws_proj_dev.aws_ec2.yml` discovers running, initially untagged instances from the `proj-dev` profile in `eu-central-1`, keyed by instance ID. AWS-provided host variables use the `aws_` prefix to avoid reserved names. Its matching group vars connect as `ssm-user` through EC2 Instance Connect and an SSH-over-SSM tunnel. Service topology groups follow `<service>_<topology>_<provider>` and provider parent groups aggregate their own children. There is no shared `cloud` group.
+    - `group_vars/` has matching provider or account files. Each provider/account owns its connection and become configuration; provider files also own timezone and NTP settings, while `all.yml` contains only genuine global values.
   - `playbooks/` — Bootstrap (`kvm-init.yml`, `cloud-init.yml`), service (`kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml`, `docker.yml`, `xray.yml`, `sing-box.yml`), and developer-utility (`debug.yml`) entry points.
   - `roles/` — Standard Ansible role layout (`tasks/`, `handlers/`, `defaults/`, `vars/`, `templates/`, `files/`)
-  - `keys/` — Single `devops_key/devops_key.pub` key pair authorized for the `devops` user on all managed hosts
-  - `pyproject.toml` / `.python-version` / `uv.lock` — uv-managed Python 3.13 control environment with locked `ansible-core` and `ansible-lint` dependencies
-  - `requirements.yml` — Ansible Galaxy collection dependencies, installed under `~/.ansible/collections` by default
+  - `keys/` — Ignored SSH key material documented by `keys/README.md`: `devops_key` for steady-state hosts and `aws_ssm_key` for EC2 Instance Connect over Session Manager
+  - `pyproject.toml` / `.python-version` / `uv.lock` — uv-managed Python 3.13 control environment with locked Ansible tooling plus the `boto3`/`botocore` AWS SDK dependencies
+  - `requirements.yml` — Ansible Galaxy collection dependencies, including `amazon.aws`, installed under `~/.ansible/collections` by default
   - `ansible.cfg` — Paths resolved relative to the cfg file (default `kvm.ini`, `roles/`); user-shared state lives under `~/.ansible/` (`cache/`, `ansible.log`). Smart gathering, `result_format=yaml`, profile_tasks + timer callbacks, force_handlers, pipelined SSH.
   - `.gitignore` — Per-directory gitignore (`.venv`, vault files, retry files, runtime dirs, all of `keys/` except `keys/README.md`)
 - `saltproject/` — Salt states and pillars

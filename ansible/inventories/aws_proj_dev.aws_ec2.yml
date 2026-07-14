@@ -1,0 +1,21 @@
+---
+plugin: amazon.aws.aws_ec2
+profile: proj-dev
+regions:
+  - eu-central-1
+
+# Initial discovery intentionally does not require tags. Add the
+# AnsibleManaged opt-in filter after the existing instances are tagged.
+filters:
+  instance-state-name: running
+
+# Instance IDs remain stable when public and private addresses change and are
+# used directly as SSM targets by group_vars/aws_proj_dev.yml.
+hostnames:
+  - instance-id
+hostvars_prefix: aws_
+compose:
+  ansible_host: aws_instance_id
+
+groups:
+  aws_proj_dev: true

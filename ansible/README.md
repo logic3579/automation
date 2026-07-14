@@ -115,8 +115,8 @@ ssh-copy-id -i keys/devops_key.pub root@192.168.1.3
 
 ### Inventory
 
-Steady-state hosts are split by provider. `ansible.cfg` loads these files by
-default, so routine commands do not need `-i`:
+Steady-state hosts are split by provider. `ansible.cfg` loads only `kvm.ini` by
+default, so KVM commands do not need `-i`:
 
 ```text
 inventories/kvm.ini
@@ -125,6 +125,14 @@ inventories/gcp.ini
 inventories/aliyun.ini
 inventories/tencent.ini
 inventories/vultr.ini
+```
+
+Every non-KVM provider must be selected explicitly, for example:
+
+```bash
+uv run ansible -i inventories/aws.ini aws -m ping
+uv run ansible-playbook -i inventories/vultr.ini playbooks/xray.yml \
+  --limit vultr --vault-id pwd.vault
 ```
 
 `inventories/init.ini` is reserved for bootstrap targets and must always be
@@ -139,7 +147,7 @@ Connection and privilege-escalation settings belong to matching files under
 ### Ad-Hoc Commands
 
 ```bash
-# Ping using default inventory
+# Ping KVM hosts using the default inventory
 uv run ansible all -m ping
 
 # Test an AWS bootstrap target as the image's initial user
@@ -150,7 +158,7 @@ uv run ansible -i inventories/init.ini aws -m ping \
 ### Playbook Execution
 
 ```bash
-# Run a playbook with default inventory
+# Run a playbook against the default KVM inventory
 uv run ansible-playbook playbooks/nginx.yml
 
 # Bootstrap KVM; root@22 and its encrypted password are defined in the playbook

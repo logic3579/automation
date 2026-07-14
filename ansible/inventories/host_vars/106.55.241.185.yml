@@ -7,7 +7,7 @@
 # overseas client side before applying.
 #
 # Deploy:
-#   uv run ansible-playbook playbooks/xray.yml --limit tencent --vault-id pwd.vault
+#   uv run ansible-playbook -i inventories/tencent.ini playbooks/xray.yml --limit tencent --vault-id pwd.vault
 
 xray_protocol: vmess
 xray_port: 443

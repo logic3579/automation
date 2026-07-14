@@ -16,8 +16,10 @@ Infrastructure automation repository containing **Ansible** roles/playbooks and 
   - `playbooks/` — Bootstrap (`kvm-init.yml`, `cloud-init.yml`), service (`kafka.yml`, `nginx.yml`, `redis.yml`, `rocketmq.yml`, `docker.yml`, `xray.yml`, `sing-box.yml`), and developer-utility (`debug.yml`) entry points.
   - `roles/` — Standard Ansible role layout (`tasks/`, `handlers/`, `defaults/`, `vars/`, `templates/`, `files/`)
   - `keys/` — Single `devops_key/devops_key.pub` key pair authorized for the `devops` user on all managed hosts
+  - `pyproject.toml` / `.python-version` / `uv.lock` — uv-managed Python 3.13 control environment with locked `ansible-core` and `ansible-lint` dependencies
+  - `requirements.yml` — Ansible Galaxy collection dependencies, installed under `~/.ansible/collections` by default
   - `ansible.cfg` — Paths resolved relative to the cfg file (`inventories/hosts.ini`, `roles/`); user-shared state lives under `~/.ansible/` (`cache/`, `ansible.log`). Smart gathering, `result_format=yaml`, profile_tasks + timer callbacks, force_handlers, pipelined SSH.
-  - `.gitignore` — Per-directory gitignore (vault files, retry files, runtime dirs, all of `keys/` except `keys/README.md`)
+  - `.gitignore` — Per-directory gitignore (`.venv`, vault files, retry files, runtime dirs, all of `keys/` except `keys/README.md`)
 - `saltproject/` — Salt states and pillars
   - `base/` — State tree with `top.sls` routing; states use `map.jinja` pattern for OS-family abstraction
   - `pillar/` — Pillar data (`top.sls` routes pillar to minions)
@@ -27,49 +29,50 @@ Infrastructure automation repository containing **Ansible** roles/playbooks and 
 
 ### Ansible
 
+Run these commands from `ansible/`. Use `uv run` in documentation, scripts, and
+automation; an interactive shell may instead run `source .venv/bin/activate`
+after `uv sync --frozen` and omit the prefix until `deactivate`.
+
 ```bash
+# Reproduce the locked Python environment and install Galaxy collections
+uv sync --frozen
+uv run ansible-galaxy collection install -r requirements.yml -p ~/.ansible/collections --force
+
 # Ping hosts using default inventory (hosts per ansible.cfg)
-ansible all -m ping
+uv run ansible all -m ping
 
 # Run a playbook (default inventory, all hosts)
-ansible-playbook playbooks/nginx.yml
+uv run ansible-playbook playbooks/nginx.yml
 
 # Service deployment uses the default hosts.ini (no -i needed)
-ansible-playbook playbooks/kafka.yml --limit kafka_standalone_kvm
-ansible-playbook playbooks/kafka.yml --limit kafka_cluster_kvm -e "kafka_cluster_enabled=yes"
-ansible-playbook playbooks/redis.yml --limit redis_cluster_kvm -e "redis_cluster_enabled=yes"
-ansible-playbook playbooks/rocketmq.yml --limit rocketmq_failover_kvm -e "rocketmq_mode=failover"
-ansible-playbook playbooks/docker.yml --limit kvm
+uv run ansible-playbook playbooks/kafka.yml --limit kafka_standalone_kvm
+uv run ansible-playbook playbooks/kafka.yml --limit kafka_cluster_kvm -e "kafka_cluster_enabled=yes"
+uv run ansible-playbook playbooks/redis.yml --limit redis_cluster_kvm -e "redis_cluster_enabled=yes"
+uv run ansible-playbook playbooks/rocketmq.yml --limit rocketmq_failover_kvm -e "rocketmq_mode=failover"
+uv run ansible-playbook playbooks/docker.yml --limit kvm
 
 # Reverse-proxy / VPS-app deployment (after cloud-init.yml) — target hosts.ini's cloud_vps
-ansible-playbook playbooks/xray.yml --limit cloud_vps --vault-id pwd.vault
-ansible-playbook playbooks/sing-box.yml --limit cloud_vps --vault-id pwd.vault -e "sing_box_protocol=vless-reality"
+uv run ansible-playbook playbooks/xray.yml --limit cloud_vps --vault-id pwd.vault
+uv run ansible-playbook playbooks/sing-box.yml --limit cloud_vps --vault-id pwd.vault -e "sing_box_protocol=vless-reality"
 
 # Bootstrap (uses init.ini's broad IP ranges)
-ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml --limit kvm --vault-id pwd.vault   # KVM: root password from vault
-ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aws                # Managed cloud (AWS / GCP / Aliyun / Tencent): ubuntu + key
-ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_vps                # Third-party VPS (Vultr / DigitalOcean / Hetzner ...): ubuntu + key
+uv run ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml --limit kvm --vault-id pwd.vault   # KVM: root password from vault
+uv run ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_aws                # Managed cloud (AWS / GCP / Aliyun / Tencent): ubuntu + key
+uv run ansible-playbook -i inventories/init.ini playbooks/cloud-init.yml --limit cloud_vps                # Third-party VPS (Vultr / DigitalOcean / Hetzner ...): ubuntu + key
 
 # Dry run (check mode)
-ansible-playbook playbooks/nginx.yml -C
+uv run ansible-playbook playbooks/nginx.yml -C
 
 # Local debug toolkit (vault / inventory / facts / lookup / templating smoke tests on localhost)
-ansible-playbook playbooks/debug.yml --ask-vault-pass
-ansible-playbook playbooks/debug.yml --tags facts          # single section
-ansible-playbook playbooks/debug.yml -e target=kafka_cluster_kvm   # against a remote group
+uv run ansible-playbook playbooks/debug.yml --ask-vault-pass
+uv run ansible-playbook playbooks/debug.yml --tags facts          # single section
+uv run ansible-playbook playbooks/debug.yml -e target=kafka_cluster_kvm   # against a remote group
 
 # Vault operations
-ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
+uv run ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
 
 # Lint (must run from the ansible/ directory so the relative paths in ansible.cfg resolve)
-cd ansible/ && ansible-lint --offline playbooks/ roles/
-
-# One-time bootstrap on a new machine: install required collections to the user-standard
-# location so ansible-lint's own venv (and any other tool) can find them automatically.
-# Use --force because some Ansible distributions bundle collections in their private
-# Python site-packages path, causing ansible-galaxy to report "Nothing to do" without
-# populating ~/.ansible/collections.
-ansible-galaxy collection install -r requirements.yml -p ~/.ansible/collections --force
+uv run ansible-lint --offline playbooks/ roles/
 ```
 
 ### Salt
@@ -98,6 +101,10 @@ roles/<name>/
 ├── templates/          # Jinja2 templates (.j2)
 └── files/              # Static files
 ```
+
+Role directory names must match `^[a-z][a-z0-9_]*$`. Use underscores for
+multi-word role identifiers (`sing_box`), while external product, package,
+service, and playbook names may retain their native hyphen (`sing-box`).
 
 ### Task Naming
 
@@ -194,12 +201,13 @@ roles/<name>/
   - **Kafka** — `kafka_cluster_enabled` (`"no"` default → replication=1 for single-broker; `"yes"` → replication=3 for 3-node KRaft). Config path is `config/server.properties` (Kafka 4.x consolidated the legacy `config/kraft/` subdir).
   - **Redis** — `redis_cluster_enabled` (`"no"` default → single port 6379; `"yes"` → 6 instances on ports 7001-7006 across 3 hosts with `--cluster-replicas 1` for 3M3S).
   - **RocketMQ** — `rocketmq_mode` (`standalone` | `2m-2s-sync` | `failover`). 2m-2s-sync cross-pairs slaves: slave on host_i protects master on host_(i+1)%N. Failover uses DLedger with `dLegerPeers` derived from `ansible_play_batch`.
-- **Multi-distro role pattern** (used by `docker` and `sing-box`): tasks/main.yml first runs `include_vars: "{{ ansible_facts.os_family }}.yml"` to load `vars/Debian.yml` or `vars/RedHat.yml` (package repo URL, GPG key path, etc.); then `install.yml` includes `install-debian.yml` or `install-redhat.yml` via `when: ansible_facts.os_family == "<family>"`. Shared package list lives in `vars/main.yml`. `xray` bypasses this — its upstream `install-release.sh` script handles distro detection itself.
+- **Multi-distro role pattern** (used by `docker` and `sing_box`): tasks/main.yml first runs `include_vars: "{{ ansible_facts.os_family }}.yml"` to load `vars/Debian.yml` or `vars/RedHat.yml` (package repo URL, GPG key path, etc.); then `install.yml` includes `install-debian.yml` or `install-redhat.yml` via `when: ansible_facts.os_family == "<family>"`. Shared package list lives in `vars/main.yml`. `xray` bypasses this — its upstream `install-release.sh` script handles distro detection itself.
 - **Fact access**: Use `ansible_facts.<name>` (e.g. `ansible_facts.os_family`, `ansible_facts.default_ipv4.address`) rather than the top-level `ansible_<name>` form — the latter is deprecated in ansible-core 2.20 and removed in 2.24 (`INJECT_FACTS_AS_VARS`). Magic vars (`ansible_play_batch`, `inventory_hostname`, `ansible_managed`, connection params like `ansible_user` / `ansible_port`) are not facts and stay as-is.
 - **Local facts**: no in-repo scaffold currently. When per-host custom facts are needed, drop `*.fact` files (INI / JSON / executable → stdout JSON) under remote `/etc/ansible/facts.d/` and refresh via `setup: filter=ansible_local`; they surface as `ansible_facts.ansible_local.<name>.<section>.<key>`.
 - **Credentials**: All passwords/secrets use Ansible Vault (`!vault |` encrypted strings). Never store plaintext credentials. The KVM bootstrap (`kvm-init`) root password and protocol secrets (`xray_uuid`, `xray_reality_private_key`, `sing_box_*`, `redis_password`) all reference vault-encrypted defaults that must be populated before use. Decrypt with `--vault-id <path>` at runtime — note `--ask-pass` is for SSH connection password, **not** vault. `cloud-init.yml` needs no vault since it authenticates via `keys/devops_key`.
 - **Template marker**: `ansible_managed` is defined as a regular variable in `group_vars/all.yml` (using template magic vars `template_path`/`template_uid`/`template_host`). The deprecated `ansible.cfg` `DEFAULT_MANAGED_STR` setting was removed (slated for removal in ansible-core 2.23).
-- **Existing roles**: audit, categraf, docker, hostname, kafka, nginx, ntp, promtail, redis, rocketmq, security, sing-box, sshd, sysctl, user, xray.
+- **Existing roles**: audit, categraf, docker, hostname, kafka, nginx, ntp, promtail, redis, rocketmq, security, sing_box, sshd, sysctl, user, xray.
 - **Salt states** use the `map.jinja` pattern for cross-platform support (Debian/RedHat).
+- **Ansible environment**: macOS and Linux controllers use uv with Python 3.13. `pyproject.toml` declares direct Python dependencies, `uv.lock` pins the complete environment, and `uv sync --frozen` reproduces it in the ignored `.venv/`. Use `uv run` for stateless command execution; activating `.venv/bin/activate` is an interactive convenience only. Galaxy collections are separate from Python packages: `requirements.yml` declares them and the default install root is `~/.ansible/collections`.
 - **Ansible config** (`ansible.cfg`): paths are relative (resolved against the cfg file's directory, so both the repo layout and a standalone `~/ansible/` deploy work). 50 forks, SSH pipelining, smart gathering (re-uses JSON fact cache when fresh), `result_format = yaml` for readable per-task output, `ansible.posix.profile_tasks` + `timer` callbacks for per-task / total-play timing, `force_handlers = True` so handlers still fire on partial failure, `host_key_checking = False` for bootstrap. User-shared state (log + fact cache) lives under `~/.ansible/`.
 - **Gitignore strategy**: Per-directory `.gitignore` files (in `ansible/` and `saltproject/`) instead of root-level, ensuring rules work when directories are deployed standalone. `ansible/keys/` uses `keys/*` + `!keys/README.md` so private key material never gets committed but the README stays tracked.

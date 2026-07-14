@@ -5,6 +5,7 @@
 *.retry
 
 # Runtime directories
+.venv/
 tmp/
 cache/
 plugins/

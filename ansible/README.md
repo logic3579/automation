@@ -4,59 +4,111 @@
 
 Infrastructure automation using Ansible for server provisioning and configuration management. Hosts are organized by geographic region (east/west) with roles for common services (kafka, nginx, redis, rocketmq, etc.).
 
-## Install
+## Environment Setup
 
 ### Prerequisites
 
-```bash
-# Dependencies
-# - SSH protocol
-# - Python 2 (scp) or Python 3 (sftp)
+The Ansible control environment is managed by [uv](https://docs.astral.sh/uv/)
+on both macOS and Linux. Do not install Ansible globally with `pip`, `pipx`,
+Homebrew, or a system package manager.
 
-# Network
-# - Ensure firewall allows SSH traffic
+Managed hosts need SSH access and a supported Python interpreter. Ensure that
+network firewalls or cloud security groups allow the connection method used by
+the inventory.
+
+### Install uv
+
+```bash
+# macOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### Install on Linux
+Restart the shell if `uv` is not immediately available, then verify it:
 
 ```bash
-# Root directory
-ANSIBLE_ROOT=/opt/ansible
-mkdir $ANSIBLE_ROOT && cd $ANSIBLE_ROOT
-
-# Option 1: install from source
-git clone https://github.com/ansible/ansible.git
-cd ansible
-python setup.py build
-python setup.py install
-cp -aR examples/* $ANSIBLE_ROOT
-
-# Option 2: install via pip
-pip install ansible==x.x.x
-cp -aR examples/* $ANSIBLE_ROOT
-
-# Verify
-ansible --version
-
-# Set ansible.cfg environment
-export ANSIBLE_CONFIG=/opt/ansible
+uv --version
 ```
+
+### Initialize the project environment
+
+Run all commands from the `ansible/` directory. `uv sync` installs the Python
+version declared in `.python-version`, creates `.venv`, and installs the exact
+Python package versions recorded in `uv.lock`.
+
+```bash
+cd ansible/
+uv sync --frozen
+uv run ansible-galaxy collection install \
+  -r requirements.yml \
+  -p ~/.ansible/collections \
+  --force
+uv run ansible --version
+uv run ansible-lint --version
+```
+
+When `-p` is omitted, `ansible-galaxy collection install` installs collections
+under the first configured collection path. With this project's default
+Ansible configuration, that path is `~/.ansible/collections`, and collection
+content is stored under
+`~/.ansible/collections/ansible_collections/<namespace>/<name>`.
+
+Use `uv sync` without `--frozen` only after intentionally changing
+`pyproject.toml`; commit the resulting `uv.lock` update. An existing checkout
+should use `uv sync --frozen` so every macOS and Linux controller gets the same
+resolved Python dependencies.
+
+### Run commands
+
+Repository documentation and automation use `uv run` because it selects the
+project environment without relying on shell state:
+
+```bash
+uv run ansible all -m ping
+uv run ansible-playbook playbooks/nginx.yml -C
+```
+
+For an interactive shell, activate the environment once and then run the
+commands without the `uv run` prefix:
+
+```bash
+source .venv/bin/activate
+ansible all -m ping
+ansible-playbook playbooks/nginx.yml -C
+deactivate
+```
+
+Run `uv sync --frozen` before activation. Activation only applies to the
+current shell, and commands must still run from the `ansible/` directory so
+the project `ansible.cfg` and its relative paths are used.
+
+### Update dependencies
+
+Python tools and Ansible collections use separate dependency files:
+
+- Add or remove Python packages with `uv add <package>` and
+  `uv remove <package>`. This updates both `pyproject.toml` and `uv.lock`.
+- Upgrade locked Python packages with `uv lock --upgrade`, then run
+  `uv sync --frozen`.
+- Update collection constraints in `requirements.yml`, then rerun the
+  `uv run ansible-galaxy collection install ...` command above.
+
+Review and commit `pyproject.toml`, `uv.lock`, and `requirements.yml` changes
+together when they belong to the same dependency update.
 
 ### Credentials
 
 ```bash
 # Generate private and public key
-ssh-keygen -t rsa -b 1024 -C 'for ansible key' -f /opt/ansible/keys/ansible -q -N ""
-mv /opt/ansible/keys/ansible /opt/ansible/keys/ansible.key
+ssh-keygen -t ed25519 -C 'devops@ansible' -f keys/devops_key -N ""
 
 # Option: if private key has password
 ssh-agent bash
-ssh-add ~/.ssh/id_rsa
+ssh-add keys/devops_key
 
 # Add public keys to all hosts
-ssh-copy-id -i /opt/ansible/keys/ansible.key root@192.168.1.1
-ssh-copy-id -i /opt/ansible/keys/ansible.key root@192.168.1.2
-ssh-copy-id -i /opt/ansible/keys/ansible.key root@192.168.1.3
+ssh-copy-id -i keys/devops_key.pub root@192.168.1.1
+ssh-copy-id -i keys/devops_key.pub root@192.168.1.2
+ssh-copy-id -i keys/devops_key.pub root@192.168.1.3
 ```
 
 ## Usage
@@ -73,35 +125,35 @@ inventories/hosts.ini     # Production hosts (default in ansible.cfg)
 
 ```bash
 # Ping using default inventory
-ansible all -m ping
+uv run ansible all -m ping
 
 # Ping specific hosts with a special inventory
-ansible -i inventories/init.ini 10.0.10.12,10.0.10.13 -m ping
+uv run ansible -i inventories/init.ini 10.0.10.12,10.0.10.13 -m ping
 ```
 
 ### Playbook Execution
 
 ```bash
 # Run a playbook with default inventory
-ansible-playbook playbooks/nginx.yml
+uv run ansible-playbook playbooks/nginx.yml
 
 # Run with specific inventory and host override
-ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml -e "hosts_var=10.0.10.12,10.0.10.13"
+uv run ansible-playbook -i inventories/init.ini playbooks/kvm-init.yml -e "hosts_var=10.0.10.12,10.0.10.13"
 
 # Override remote user and become method
-ansible-playbook playbooks/redis.yml -u root --become --become-method su
+uv run ansible-playbook playbooks/redis.yml -u root --become --become-method su
 
 # List tasks and tags without executing
-ansible-playbook playbooks/nginx.yml --list-tasks --list-tags
+uv run ansible-playbook playbooks/nginx.yml --list-tasks --list-tags
 
 # Dry run (check mode)
-ansible-playbook playbooks/nginx.yml -C
+uv run ansible-playbook playbooks/nginx.yml -C
 
 # Step through tasks interactively
-ansible-playbook playbooks/nginx.yml --step
+uv run ansible-playbook playbooks/nginx.yml --step
 
 # Start at a specific task
-ansible-playbook playbooks/nginx.yml --start-at-task "your task name"
+uv run ansible-playbook playbooks/nginx.yml --start-at-task "your task name"
 ```
 
 ### Playbook Examples
@@ -260,10 +312,10 @@ ansible-playbook playbooks/nginx.yml --start-at-task "your task name"
 
 ```bash
 # Encrypt a string
-ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
+uv run ansible-vault encrypt_string 'secret' --name 'var_name' --vault-id pwd.vault
 
 # Run playbook with vault password prompt
-ansible-playbook playbooks/kvm-init.yml --ask-vault-pass
+uv run ansible-playbook playbooks/kvm-init.yml --ask-vault-pass
 ```
 
 Using vault-encrypted variables in playbooks:
@@ -284,11 +336,12 @@ Using vault-encrypted variables in playbooks:
 ### Ansible Lint
 
 ```bash
-ansible-lint playbooks/nginx.yml
+uv run ansible-lint --offline playbooks/ roles/
 ```
 
 ## Reference
 
-1. [Ansible Documentation](https://docs.ansible.com/ansible)
-2. [Ansible Repository](https://github.com/ansible/ansible)
-3. [Ansible Galaxy](https://galaxy.ansible.com/)
+1. [uv Documentation](https://docs.astral.sh/uv/)
+2. [Ansible Documentation](https://docs.ansible.com/ansible)
+3. [Ansible Repository](https://github.com/ansible/ansible)
+4. [Ansible Galaxy](https://galaxy.ansible.com/)

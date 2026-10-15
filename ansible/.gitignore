@@ -1,11 +1,26 @@
 # Vault password files
 *.vault
 
-# Retry files
+# Ansible runtime and downloaded collections
 *.retry
+.ansible/
+.ansible-collections/
+.ansible-tmp/
+.ansible_async/
+collections/ansible_collections/
+ansible.log
 
-# Runtime directories
+# Python environment and bytecode
 .venv/
+__pycache__/
+*.py[cod]
+
+# Tool caches and test artifacts
+.cache/
+.pytest_cache/
+.molecule/
+
+# Project runtime directories
 tmp/
 cache/
 plugins/

@@ -1,10 +1,31 @@
-# Ansible
+# Infrastructure Automation
 
 ## Introduction
 
-Infrastructure automation using Ansible for server provisioning and configuration management. Hosts are organized by geographic region (east/west) with roles for common services (kafka, nginx, redis, rocketmq, etc.).
+Infrastructure automation for server provisioning and configuration management
+using two independent toolsets: Ansible and Salt Project. Ansible is the primary
+workspace, with inventories organized by provider and roles for services such as
+Kafka, Nginx, Redis, and RocketMQ.
 
-## Environment Setup
+## Repository Layout
+
+| Path | Contents |
+| --- | --- |
+| [ansible/](ansible/) | Ansible configuration and uv-managed control environment |
+| [ansible/playbooks/](ansible/playbooks/) | Bootstrap, service, and debug playbooks |
+| [ansible/roles/](ansible/roles/) | Reusable service and system roles |
+| [ansible/inventories/](ansible/inventories/) | Provider inventories and host/group variables |
+| [ansible/keys/README.md](ansible/keys/README.md) | SSH key setup and distribution |
+| [saltproject/](saltproject/) | Salt states, pillar data, and controller/minion configuration examples |
+| [AGENTS.md](AGENTS.md) | Repository conventions for coding agents |
+
+## Ansible Environment Setup
+
+Although this README is at the repository root, all Ansible commands below run
+from `ansible/`. Start at the repository root and enter that directory during
+setup. Paths in the Ansible command examples, such as `playbooks/`,
+`inventories/`, and `keys/`, are relative to that working directory; Markdown
+links are relative to this README.
 
 ### Prerequisites
 
@@ -31,7 +52,7 @@ uv --version
 
 ### Initialize the project environment
 
-Run all commands from the `ansible/` directory. `uv sync` installs the Python
+Run all Ansible commands from the `ansible/` directory. `uv sync` installs the Python
 version declared in `.python-version`, creates `.venv`, and installs the exact
 Python package versions recorded in `uv.lock`.
 
@@ -111,7 +132,9 @@ ssh-copy-id -i keys/devops_key.pub root@192.168.1.2
 ssh-copy-id -i keys/devops_key.pub root@192.168.1.3
 ```
 
-## Usage
+## Ansible Usage
+
+The following commands assume the shell is already in `ansible/`.
 
 ### Inventory
 
@@ -395,9 +418,56 @@ Using vault-encrypted variables in playbooks:
 uv run ansible-lint --offline playbooks/ roles/
 ```
 
+## Salt Project
+
+The [saltproject/](saltproject/) workspace is independent of the Ansible
+environment. Run Salt commands on a configured Salt master with access to the
+target minions; `uv run` and the Ansible working directory do not apply.
+
+### Structure and Configuration
+
+| Path | Purpose |
+| --- | --- |
+| [saltproject/base/](saltproject/base/) | State tree, including Apache, MySQL, SSH, and package management; `map.jinja` files hold OS-specific mappings |
+| [saltproject/base/top.sls](saltproject/base/top.sls) | State assignment by minion ID, grains, and other matchers |
+| [saltproject/pillar/](saltproject/pillar/) | Pillar configuration and its `top.sls` assignments |
+| [saltproject/master.conf](saltproject/master.conf) | Example master configuration, file roots, and pillar roots |
+| [saltproject/minion.conf](saltproject/minion.conf) | Example minion identity, master addresses, and authentication settings |
+
+The example master reads the `base` state tree from `/srv/salt/base` and
+pillar data from `/srv/salt/pillar`. Deploy `saltproject/base/` and
+`saltproject/pillar/` to those locations, or adjust the master's `file_roots`
+and `pillar_roots` to match the deployment. The `dev` and `prod` state roots
+in the example configuration are not included in this checkout.
+
+Adapt the configuration examples to the deployment, including minion IDs,
+master addresses, and master-signing settings. Review both top files before
+applying states: some entries reference states that are not present here.
+
+### Preview and Apply a State
+
+Replace `<minion-id>` with the intended minion. For example, inspect and
+preview the existing `apache` state before applying it:
+
+```bash
+salt '<minion-id>' test.ping
+salt '<minion-id>' state.show_sls apache
+salt '<minion-id>' state.apply apache test=True
+```
+
+After reviewing the preview and supplying the required pillar configuration:
+
+```bash
+salt '<minion-id>' state.apply apache
+```
+
+Target the affected minion or group instead of applying the example top file
+to all minions. Store deployment secrets outside version control.
+
 ## Reference
 
 1. [uv Documentation](https://docs.astral.sh/uv/)
 2. [Ansible Documentation](https://docs.ansible.com/ansible)
 3. [Ansible Repository](https://github.com/ansible/ansible)
 4. [Ansible Galaxy](https://galaxy.ansible.com/)
+5. [Salt Project Documentation](https://docs.saltproject.io/)
